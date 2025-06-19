@@ -5,12 +5,15 @@ import 'package:tmdb_movies/models/movie_model.dart';
 
 part 'tmdb_api.g.dart';
 
-@RestApi(baseUrl: 'https://api.themoviedb.org/3')
+@RestApi(baseUrl: 'https://api.themoviedb.org/3/')
 abstract class TMDBApi {
   factory TMDBApi(Dio dio, {String baseUrl}) = _TMDBApi;
 
   @GET("trending/movie/day")
-  Future<MovieListResponse> getTrendingMovies(@Query("api_key") String apiKey);
+  Future<MovieListResponse> getTrendingMovies(
+    @Query("api_key") String apiKey,
+    @Query("language") String language,
+  );
 
   @GET("movie/now_playing")
   Future<MovieListResponse> getNowPlayingMovies(
