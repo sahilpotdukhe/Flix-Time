@@ -7,22 +7,25 @@ class MovieRepositoryImp extends MovieRepository {
   final TMDBApi tmdbApi;
   final Box<List<MovieModel>> cacheBox;
   final Box<MovieModel> movieDetailsBox;
-  final String apiKey = '';
+  final String apiKey;
 
   MovieRepositoryImp({
     required this.tmdbApi,
     required this.cacheBox,
     required this.movieDetailsBox,
+    required this.apiKey,
   });
 
   @override
   Future<List<MovieModel>> getTrendingMovies() async {
     try {
-      final response = await tmdbApi.getTrendingMovies(apiKey);
+      final response = await tmdbApi.getTrendingMovies(apiKey, 'en-US');
+      print("Raw response JSON: ${response.toJson()}");
+      print("Trending movies fetched: ${response.results.length}");
       await cacheBox.put('trending', response.results);
       return response.results;
     } catch (_) {
-      return cacheBox.get('trending', defaultValue: <MovieModel>[])!;
+      return cacheBox.get('trending', defaultValue: [])!.cast<MovieModel>();
     }
   }
 
@@ -33,7 +36,7 @@ class MovieRepositoryImp extends MovieRepository {
       await cacheBox.put('now_playing', response.results);
       return response.results;
     } catch (_) {
-      return cacheBox.get('now_playing', defaultValue: <MovieModel>[])!;
+      return cacheBox.get('now_playing', defaultValue: [])!.cast<MovieModel>();
     }
   }
 

@@ -20,6 +20,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       final trendingMovies = await movieRepository.getTrendingMovies();
       emit(state.copyWith(trendingMovies: trendingMovies, isLoading: false));
     } catch (e) {
+      print("Trending error: $e"); // ✅ Add this
       emit(
         state.copyWith(
           isLoading: false,

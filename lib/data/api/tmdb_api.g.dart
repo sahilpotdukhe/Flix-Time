@@ -13,7 +13,7 @@ class _TMDBApi implements TMDBApi {
     this._dio, {
     this.baseUrl,
   }) {
-    baseUrl ??= 'https://api.themoviedb.org/3';
+    baseUrl ??= 'https://api.themoviedb.org/3/';
   }
 
   final Dio _dio;
@@ -21,9 +21,15 @@ class _TMDBApi implements TMDBApi {
   String? baseUrl;
 
   @override
-  Future<MovieListResponse> getTrendingMovies(String apiKey) async {
+  Future<MovieListResponse> getTrendingMovies(
+    String apiKey,
+    String language,
+  ) async {
     const _extra = <String, dynamic>{};
-    final queryParameters = <String, dynamic>{r'api_key': apiKey};
+    final queryParameters = <String, dynamic>{
+      r'api_key': apiKey,
+      r'language': language,
+    };
     final _headers = <String, dynamic>{};
     final Map<String, dynamic>? _data = null;
     final _result = await _dio
