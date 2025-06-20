@@ -25,20 +25,38 @@ class _SearchView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text("Search Movies")),
+      backgroundColor: const Color(0xFF0E0E0E),
+      appBar: AppBar(
+        backgroundColor: Colors.black87,
+        elevation: 0,
+        centerTitle: true,
+        title: const Text(
+          "Search Movies",
+          style: TextStyle(
+            color: Colors.white,
+            fontWeight: FontWeight.w600,
+            fontSize: 20,
+          ),
+        ),
+        iconTheme: const IconThemeData(color: Colors.white),
+      ),
       body: Column(
         children: [
           Padding(
             padding: const EdgeInsets.all(12),
             child: TextField(
               style: const TextStyle(color: Colors.white),
+              cursorColor: Colors.amber,
               decoration: InputDecoration(
+                filled: true,
+                fillColor: Colors.grey[850],
                 hintText: "Search for a movie...",
                 hintStyle: const TextStyle(color: Colors.white54),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(12),
+                  borderSide: BorderSide.none,
                 ),
-                prefixIcon: const Icon(Icons.search),
+                prefixIcon: const Icon(Icons.search, color: Colors.white54),
               ),
               onChanged: (query) {
                 context.read<SearchBloc>().add(
@@ -51,37 +69,42 @@ class _SearchView extends StatelessWidget {
             child: BlocBuilder<SearchBloc, SearchState>(
               builder: (context, state) {
                 if (state.isLoading) {
-                  return const Center(child: CircularProgressIndicator());
+                  return const Center(
+                    child: CircularProgressIndicator(color: Colors.amber),
+                  );
                 }
 
                 if (state.error != null) {
-                  return Center(child: Text("Error: ${state.error!}"));
+                  return Center(
+                    child: Text(
+                      "Error: ${state.error!}",
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                  );
                 }
 
                 if (state.searchResult.isEmpty) {
-                  return const Center(child: Text("No results found"));
+                  return const Center(
+                    child: Text(
+                      "No results found",
+                      style: TextStyle(color: Colors.white70),
+                    ),
+                  );
                 }
 
-                return ListView.builder(
+                return ListView.separated(
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   itemCount: state.searchResult.length,
+                  separatorBuilder: (_, __) => const SizedBox(height: 10),
                   itemBuilder: (context, index) {
                     final MovieModel movie = state.searchResult[index];
                     final posterUrl =
                         'https://image.tmdb.org/t/p/w500${movie.posterPath}';
-                    return ListTile(
-                      leading: ClipRRect(
-                        borderRadius: BorderRadius.circular(8),
-                        child: NetworkImageWithFallback(
-                          imageUrl: posterUrl,
-                          height: 60,
-                          width: 40,
-                        ),
-                      ),
-                      title: Text(
-                        movie.title,
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                      subtitle: Text(movie.releaseDate),
+
+                    return GestureDetector(
                       onTap: () {
                         Navigator.push(
                           context,
@@ -91,6 +114,61 @@ class _SearchView extends StatelessWidget {
                           ),
                         );
                       },
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: Colors.grey[900],
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        padding: const EdgeInsets.all(10),
+                        child: Row(
+                          children: [
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(8),
+                              child: NetworkImageWithFallback(
+                                imageUrl: posterUrl,
+                                height: 80,
+                                width: 55,
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    movie.title,
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 16,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  Text(
+                                    "📅 ${movie.releaseDate ?? 'N/A'}   ⭐ ${movie.voteAverage}",
+                                    style: const TextStyle(
+                                      color: Colors.amberAccent,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 4),
+                                  Text(
+                                    movie.overview.isNotEmpty
+                                        ? (movie.overview.length > 80
+                                            ? "${movie.overview.substring(0, 80)}..."
+                                            : movie.overview)
+                                        : "No description available.",
+                                    style: const TextStyle(
+                                      color: Colors.white70,
+                                      fontSize: 13,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     );
                   },
                 );

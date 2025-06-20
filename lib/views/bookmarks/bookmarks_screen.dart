@@ -11,38 +11,105 @@ class BookmarksScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Bookmarked Movies')),
+      backgroundColor: const Color(0xFF0E0E0E),
+      appBar: AppBar(
+        backgroundColor: Colors.black87,
+        elevation: 0,
+        centerTitle: true,
+        title: const Text(
+          'Bookmarked Movies',
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.w600,
+            color: Colors.white,
+          ),
+        ),
+        iconTheme: const IconThemeData(color: Colors.white),
+      ),
       body: BlocBuilder<BookmarksBloc, BookmarksState>(
         builder: (context, state) {
           if (state.bookmarks.isEmpty) {
-            return Center(child: Text('No bookmarks found'));
+            return const Center(
+              child: Text(
+                'No bookmarks found',
+                style: TextStyle(color: Colors.white70, fontSize: 16),
+              ),
+            );
           }
-          return ListView.builder(
+
+          return ListView.separated(
+            padding: const EdgeInsets.all(12),
             itemCount: state.bookmarks.length,
+            separatorBuilder: (_, __) => const SizedBox(height: 12),
             itemBuilder: (context, index) {
               final movie = state.bookmarks[index];
               final posterUrl =
                   'https://image.tmdb.org/t/p/w500${movie.posterPath}';
-              return ListTile(
-                leading: NetworkImageWithFallback(
-                  imageUrl: posterUrl,
-                  height: 50,
-                  width: 50,
-                ),
-                title: Text(
-                  movie.title,
-                  style: const TextStyle(color: Colors.white),
-                ),
-                subtitle: Text("⭐ ${movie.voteAverage}"),
+
+              return GestureDetector(
                 onTap: () {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder:
-                          (context) => MovieDetailsScreen(movieId: movie.id),
+                      builder: (_) => MovieDetailsScreen(movieId: movie.id),
                     ),
                   );
                 },
+                child: Container(
+                  decoration: BoxDecoration(
+                    color: Colors.grey[900],
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: const EdgeInsets.all(10),
+                  child: Row(
+                    children: [
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(8),
+                        child: NetworkImageWithFallback(
+                          imageUrl: posterUrl,
+                          height: 80,
+                          width: 60,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              movie.title,
+                              style: const TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              "⭐ ${movie.voteAverage}   |   📅 ${movie.releaseDate ?? 'N/A'}",
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: Colors.amberAccent,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              movie.overview.isNotEmpty
+                                  ? movie.overview.length > 100
+                                      ? "${movie.overview.substring(0, 100)}..."
+                                      : movie.overview
+                                  : "No description available.",
+                              style: const TextStyle(
+                                fontSize: 13,
+                                color: Colors.white70,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               );
             },
           );
