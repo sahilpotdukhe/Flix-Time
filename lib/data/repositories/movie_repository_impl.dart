@@ -128,9 +128,15 @@ class MovieRepositoryImp implements MovieRepository {
   }
 
   @override
-  Future<List<MovieModel>> searchMovies(String query) {
-    // TODO: implement searchMovies
-    throw UnimplementedError();
+  Future<List<MovieModel>> searchMovies(String query) async {
+    try {
+      if (!await _isConnected()) throw Exception("Offline");
+      final response = await tmdbApi.searchMovie(apiKey, query);
+      return response.results;
+    } catch (e) {
+      print("Search error: $e");
+      return [];
+    }
   }
 
   @override
