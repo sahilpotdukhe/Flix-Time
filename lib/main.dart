@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:hive_flutter/adapters.dart';
 import 'package:tmdb_movies/data/api/tmdb_api.dart';
+import 'package:tmdb_movies/data/repositories/movie_repository.dart';
 import 'package:tmdb_movies/data/repositories/movie_repository_impl.dart';
 import 'package:tmdb_movies/models/movie_model.dart';
 import 'package:tmdb_movies/viewmodels/home/home_bloc.dart';
@@ -17,27 +18,31 @@ void main() async {
   await Hive.initFlutter();
   Hive.registerAdapter(MovieModelAdapter());
 
-  await Hive.openBox<List<MovieModel>>('movieBox');
-  await Hive.openBox<MovieModel>('movieDetailsBox');
-
-  final moviesBox = Hive.box<List<MovieModel>>('movieBox');
-  final detailsBox = Hive.box<MovieModel>('movieDetailsBox');
+  final trendingBox = await Hive.openBox<MovieModel>('trendingBox');
+  final nowPlayingBox = await Hive.openBox<MovieModel>('nowPlayingBox');
+  final detailsBox = await Hive.openBox<MovieModel>('movieDetailsBox');
 
   final dio = Dio();
   final apiKey = dotenv.env['TMDB_API_KEY'];
+
+  if (apiKey == null || apiKey.isEmpty) {
+    throw Exception("API key not found in .env file.");
+  }
+
   final tmdbApi = TMDBApi(dio);
-  final movieRepository = MovieRepositoryImp(
+  final MovieRepository movieRepository = MovieRepositoryImp(
     tmdbApi: tmdbApi,
-    cacheBox: moviesBox,
+    trendingBox: trendingBox,
+    nowPlayingBox: nowPlayingBox,
     movieDetailsBox: detailsBox,
-    apiKey: apiKey!,
+    apiKey: apiKey,
   );
 
   runApp(MyApp(movieRepository: movieRepository));
 }
 
 class MyApp extends StatelessWidget {
-  final MovieRepositoryImp movieRepository;
+  final MovieRepository movieRepository;
   const MyApp({super.key, required this.movieRepository});
 
   @override
