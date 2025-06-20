@@ -1,9 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:tmdb_movies/data/repositories/movie_repository.dart';
 import 'package:tmdb_movies/models/movie_model.dart';
 import 'package:tmdb_movies/viewmodels/home/home_bloc.dart';
 import 'package:tmdb_movies/viewmodels/home/home_events.dart';
 import 'package:tmdb_movies/viewmodels/home/home_state.dart';
+import 'package:tmdb_movies/viewmodels/movie_details/movie_details_bloc.dart';
+import 'package:tmdb_movies/viewmodels/movie_details/movie_details_event.dart';
+import 'package:tmdb_movies/views/bookmarks/bookmarks_screen.dart';
+import 'package:tmdb_movies/views/movie_details/movie_details_screen.dart';
 import 'package:tmdb_movies/views/widgets/network_image_with_fallback.dart';
 import 'package:tmdb_movies/views/widgets/network_status_banner.dart';
 
@@ -16,6 +21,17 @@ class HomeScreen extends StatelessWidget {
       appBar: AppBar(
         title: const Text('Movies App'),
         backgroundColor: Colors.black,
+        actions: [
+          IconButton(
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => BookmarksScreen()),
+              );
+            },
+            icon: Icon(Icons.bookmark),
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -90,7 +106,14 @@ class HomeScreen extends StatelessWidget {
             final posterUrl =
                 'https://image.tmdb.org/t/p/w500${movie.posterPath}';
             return GestureDetector(
-              onTap: () {},
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (_) => MovieDetailsScreen(movieId: movie.id),
+                  ),
+                );
+              },
               child: SizedBox(
                 width: 140,
                 child: Column(

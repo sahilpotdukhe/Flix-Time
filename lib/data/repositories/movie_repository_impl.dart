@@ -9,6 +9,7 @@ class MovieRepositoryImp implements MovieRepository {
   final Box<MovieModel> trendingBox;
   final Box<MovieModel> nowPlayingBox;
   final Box<MovieModel> movieDetailsBox;
+  final Box<MovieModel> bookmarksBox;
   final String apiKey;
 
   MovieRepositoryImp({
@@ -16,6 +17,7 @@ class MovieRepositoryImp implements MovieRepository {
     required this.trendingBox,
     required this.nowPlayingBox,
     required this.movieDetailsBox,
+    required this.bookmarksBox,
     required this.apiKey,
   });
 
@@ -24,6 +26,7 @@ class MovieRepositoryImp implements MovieRepository {
     return result != ConnectivityResult.none;
   }
 
+  @override
   Future<List<MovieModel>> getTrendingMovies() async {
     try {
       print("📡 Trying to fetch trending movies from API...");
@@ -57,6 +60,7 @@ class MovieRepositoryImp implements MovieRepository {
     }
   }
 
+  @override
   Future<List<MovieModel>> getNowPlayingMovies() async {
     try {
       print("📡 Trying to fetch now playing movies from API...");
@@ -90,30 +94,64 @@ class MovieRepositoryImp implements MovieRepository {
     }
   }
 
-  Future<void> cacheMovieDetails(MovieModel movie) async {
-    await movieDetailsBox.put(movie.id.toString(), movie);
-    print("💾 Cached movie detail for: ${movie.title}");
-  }
-
-  MovieModel? getCachedMovieDetails(int movieId) {
-    final movie = movieDetailsBox.get(movieId.toString());
-    if (movie != null) {
-      print("📦 Loaded movie detail from cache: ${movie.title}");
-    } else {
-      print("❌ No cached details found for movie ID: $movieId");
-    }
-    return movie;
-  }
-
   @override
-  Future<MovieModel> getMovieDetails(int movieId) {
-    // TODO: implement getMovieDetails
-    throw UnimplementedError();
+  Future<MovieModel> getMovieDetails(int movieId) async {
+    final key = movieId.toString();
+
+    // 1. Try from cache first
+    final cached = movieDetailsBox.get(key);
+    if (cached != null) {
+      print("📦 Loaded movie detail from Hive cache: ${cached.title}");
+      return cached;
+    }
+
+    // 2. Check network status
+    if (!await _isConnected()) {
+      print("❌ Offline and no cached data for movie ID: $movieId");
+      throw Exception("You are offline. No cached details available.");
+    }
+
+    try {
+      // 3. Fetch from API
+      print("🌐 Fetching movie detail from TMDB API...");
+      final movie = await tmdbApi.getMovieDetails(movieId, apiKey);
+
+      // 4. Cache in Hive
+      await movieDetailsBox.put(key, movie);
+      print("💾 Cached movie detail for: ${movie.title}");
+
+      return movie;
+    } catch (e) {
+      print("⚠️ Failed to fetch movie details: $e");
+      throw Exception("Failed to load movie details.");
+    }
   }
 
   @override
   Future<List<MovieModel>> searchMovies(String query) {
     // TODO: implement searchMovies
     throw UnimplementedError();
+  }
+
+  @override
+  List<MovieModel> getBookMarkedMovies() {
+    return bookmarksBox.values.toList();
+  }
+
+  @override
+  bool isBookmarked(int movieId) {
+    return bookmarksBox.containsKey(movieId.toString());
+  }
+
+  @override
+  Future<void> toggleBookmark(MovieModel movie) async {
+    final key = movie.id.toString();
+    if (bookmarksBox.containsKey(key)) {
+      await bookmarksBox.delete(key);
+      print("🔖 Removed bookmark: ${movie.title}");
+    } else {
+      await bookmarksBox.put(key, movie);
+      print("🔖 Added bookmark: ${movie.title}");
+    }
   }
 }
