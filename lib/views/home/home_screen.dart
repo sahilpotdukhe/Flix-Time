@@ -4,6 +4,7 @@ import 'package:tmdb_movies/models/movie_model.dart';
 import 'package:tmdb_movies/viewmodels/home/home_bloc.dart';
 import 'package:tmdb_movies/viewmodels/home/home_events.dart';
 import 'package:tmdb_movies/viewmodels/home/home_state.dart';
+import 'package:tmdb_movies/views/widgets/network_image_with_fallback.dart';
 import 'package:tmdb_movies/views/widgets/network_status_banner.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -96,25 +97,10 @@ class HomeScreen extends StatelessWidget {
                   children: [
                     ClipRRect(
                       borderRadius: BorderRadius.circular(12),
-                      child: Image.network(
-                        posterUrl,
+                      child: NetworkImageWithFallback(
+                        imageUrl: posterUrl,
                         height: 180,
                         width: 140,
-                        fit: BoxFit.cover,
-                        errorBuilder:
-                            (context, error, stackTrace) =>
-                                const Icon(Icons.error),
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) return child;
-                          return Container(
-                            height: 180,
-                            width: 140,
-                            color: Colors.grey[800],
-                            child: const Center(
-                              child: CircularProgressIndicator(strokeWidth: 2),
-                            ),
-                          );
-                        },
                       ),
                     ),
                     const SizedBox(height: 6),

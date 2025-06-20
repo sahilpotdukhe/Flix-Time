@@ -1,61 +1,119 @@
+import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:hive/hive.dart';
 import 'package:tmdb_movies/data/api/tmdb_api.dart';
 import 'package:tmdb_movies/data/repositories/movie_repository.dart';
 import 'package:tmdb_movies/models/movie_model.dart';
 
-class MovieRepositoryImp extends MovieRepository {
+class MovieRepositoryImp implements MovieRepository {
   final TMDBApi tmdbApi;
-  final Box<List<MovieModel>> cacheBox;
+  final Box<MovieModel> trendingBox;
+  final Box<MovieModel> nowPlayingBox;
   final Box<MovieModel> movieDetailsBox;
   final String apiKey;
 
   MovieRepositoryImp({
     required this.tmdbApi,
-    required this.cacheBox,
+    required this.trendingBox,
+    required this.nowPlayingBox,
     required this.movieDetailsBox,
     required this.apiKey,
   });
 
-  @override
+  Future<bool> _isConnected() async {
+    final result = await Connectivity().checkConnectivity();
+    return result != ConnectivityResult.none;
+  }
+
   Future<List<MovieModel>> getTrendingMovies() async {
     try {
+      print("📡 Trying to fetch trending movies from API...");
+
+      if (!await _isConnected()) throw Exception("Offline");
+
       final response = await tmdbApi.getTrendingMovies(apiKey, 'en-US');
-      print("Raw response JSON: ${response.toJson()}");
-      print("Trending movies fetched: ${response.results.length}");
-      await cacheBox.put('trending', response.results);
-      return response.results;
-    } catch (_) {
-      return cacheBox.get('trending', defaultValue: [])!.cast<MovieModel>();
+      final movies = response.results;
+
+      print("✅ Got ${movies.length} trending movies from API");
+
+      // Clear old cache and store individually
+      await trendingBox.clear();
+      for (final movie in movies) {
+        await trendingBox.put(movie.id.toString(), movie);
+      }
+
+      print("💾 Stored ${movies.length} trending movies in Hive");
+      return movies;
+    } catch (e) {
+      print("⚠️ Error fetching trending movies: $e");
+
+      final cachedMovies = trendingBox.values.toList();
+      if (cachedMovies.isEmpty) {
+        print("❌ No cached trending movies found");
+        throw Exception("No trending movies available offline.");
+      }
+
+      print("📦 Loaded ${cachedMovies.length} trending movies from Hive");
+      return cachedMovies;
     }
   }
 
-  @override
   Future<List<MovieModel>> getNowPlayingMovies() async {
     try {
+      print("📡 Trying to fetch now playing movies from API...");
+
+      if (!await _isConnected()) throw Exception("Offline");
+
       final response = await tmdbApi.getNowPlayingMovies(apiKey);
-      await cacheBox.put('now_playing', response.results);
-      return response.results;
-    } catch (_) {
-      return cacheBox.get('now_playing', defaultValue: [])!.cast<MovieModel>();
+      final movies = response.results;
+
+      print("✅ Got ${movies.length} now playing movies from API");
+
+      // Clear old cache and store individually
+      await nowPlayingBox.clear();
+      for (final movie in movies) {
+        await nowPlayingBox.put(movie.id.toString(), movie);
+      }
+
+      print("💾 Stored ${movies.length} now playing movies in Hive");
+      return movies;
+    } catch (e) {
+      print("⚠️ Error fetching now playing movies: $e");
+
+      final cachedMovies = nowPlayingBox.values.toList();
+      if (cachedMovies.isEmpty) {
+        print("❌ No cached now playing movies found");
+        throw Exception("No now playing movies available offline.");
+      }
+
+      print("📦 Loaded ${cachedMovies.length} now playing movies from Hive");
+      return cachedMovies;
     }
   }
 
-  @override
-  Future<List<MovieModel>> searchMovies(String query) async {
-    final response = await tmdbApi.searchMovie(apiKey, query);
-    return response.results;
+  Future<void> cacheMovieDetails(MovieModel movie) async {
+    await movieDetailsBox.put(movie.id.toString(), movie);
+    print("💾 Cached movie detail for: ${movie.title}");
+  }
+
+  MovieModel? getCachedMovieDetails(int movieId) {
+    final movie = movieDetailsBox.get(movieId.toString());
+    if (movie != null) {
+      print("📦 Loaded movie detail from cache: ${movie.title}");
+    } else {
+      print("❌ No cached details found for movie ID: $movieId");
+    }
+    return movie;
   }
 
   @override
-  Future<MovieModel> getMovieDetails(int movieId) async {
-    try {
-      final movieDetails = await tmdbApi.getMovieDetails(movieId, apiKey);
-      await movieDetailsBox.put(movieId, movieDetails);
-      return movieDetails;
-    } catch (_) {
-      final cached = movieDetailsBox.get(movieId);
-      if (cached != null) return cached;
-      rethrow;
-    }
+  Future<MovieModel> getMovieDetails(int movieId) {
+    // TODO: implement getMovieDetails
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<List<MovieModel>> searchMovies(String query) {
+    // TODO: implement searchMovies
+    throw UnimplementedError();
   }
 }
