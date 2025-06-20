@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:tmdb_movies/data/repositories/movie_repository.dart';
 import 'package:tmdb_movies/models/movie_model.dart';
 import 'package:tmdb_movies/viewmodels/home/home_bloc.dart';
 import 'package:tmdb_movies/viewmodels/home/home_events.dart';
 import 'package:tmdb_movies/viewmodels/home/home_state.dart';
-import 'package:tmdb_movies/viewmodels/movie_details/movie_details_bloc.dart';
-import 'package:tmdb_movies/viewmodels/movie_details/movie_details_event.dart';
 import 'package:tmdb_movies/views/bookmarks/bookmarks_screen.dart';
 import 'package:tmdb_movies/views/movie_details/movie_details_screen.dart';
+import 'package:tmdb_movies/views/search/search_screen.dart';
 import 'package:tmdb_movies/views/widgets/network_image_with_fallback.dart';
 import 'package:tmdb_movies/views/widgets/network_status_banner.dart';
 
@@ -22,6 +20,15 @@ class HomeScreen extends StatelessWidget {
         title: const Text('Movies App'),
         backgroundColor: Colors.black,
         actions: [
+          IconButton(
+            icon: Icon(Icons.search),
+            onPressed: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (_) => const SearchScreen()),
+              );
+            },
+          ),
           IconButton(
             onPressed: () {
               Navigator.push(
