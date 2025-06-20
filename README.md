@@ -29,6 +29,21 @@ lib/
 ```
 
 ---
+## 📸 Screenshots
+
+### 🏠 Home Screen
+![Home](screenshots/home_screen.jpg)
+
+### 🎬 Movie Details
+![Details](screenshots/movie_details_screen.jpg)
+
+### 🔖 Bookmarks
+![Bookmarks](screenshots/bookmark_screen.jpg)
+
+### 🔍 Search
+![Search](screenshots/search_screen.jpg)
+
+---
 
 ## 📦 Features
 
