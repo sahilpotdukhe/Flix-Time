@@ -31,17 +31,29 @@ lib/
 ---
 ## 📸 Screenshots
 
-### 🏠 Home Screen
-![Home](screenshots/home_screen.jpg)
+<div align="left">
 
-### 🎬 Movie Details
-![Details](screenshots/movie_details_screen.jpg)
+<table>
+  <tr>
+    <td><img src="screenshots/home_screen.jpg" width="200"/></td>
+    <td><img src="screenshots/movie_details_screen.jpg" width="200"/></td>
+  </tr>
+  <tr>
+    <td><b>🏠 Home</b></td>
+    <td><b>🎬 Movie Details</b></td>
+  </tr>
+  <tr>
+    <td><img src="screenshots/bookmark_screen.jpg" width="200"/></td>
+    <td><img src="screenshots/search_screen.jpg" width="200"/></td>
+  </tr>
+  <tr>
+    <td><b>🔖 Bookmarks</b></td>
+    <td><b>🔍 Search</b></td>
+  </tr>
+</table>
 
-### 🔖 Bookmarks
-![Bookmarks](screenshots/bookmark_screen.jpg)
+</div>
 
-### 🔍 Search
-![Search](screenshots/search_screen.jpg)
 
 ---
 
