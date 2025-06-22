@@ -55,19 +55,40 @@ class HomeScreen extends StatelessWidget {
           Expanded(
             child: BlocBuilder<HomeBloc, HomeState>(
               builder: (context, state) {
-                if (state.isLoading &&
-                    state.trendingMovies.isEmpty &&
-                    state.nowPlayingMovies.isEmpty) {
+                final hasData = state.trendingMovies.isNotEmpty ||
+                    state.nowPlayingMovies.isNotEmpty;
+
+                if (state.isLoading && !hasData) {
                   return const Center(
                     child: CircularProgressIndicator(color: Colors.redAccent),
                   );
                 }
 
-                if (state.errorMessage != null) {
+                if (!hasData) {
                   return Center(
-                    child: Text(
-                      state.errorMessage!,
-                      style: const TextStyle(color: Colors.white70),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          state.errorMessage ?? "No movies available.",
+                          style: const TextStyle(
+                              color: Colors.white70, fontSize: 16),
+                          textAlign: TextAlign.center,
+                        ),
+                        const SizedBox(height: 12),
+                        ElevatedButton.icon(
+                          onPressed: () {
+                            context
+                                .read<HomeBloc>()
+                                .add(FetchTrendingMovies());
+                            context
+                                .read<HomeBloc>()
+                                .add(FetchNowPlayingMovies());
+                          },
+                          icon: const Icon(Icons.refresh),
+                          label: const Text("Retry"),
+                        ),
+                      ],
                     ),
                   );
                 }
@@ -83,13 +104,15 @@ class HomeScreen extends StatelessWidget {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        _buildSectionTitle("Trending"),
-                        _buildMovieList(state.trendingMovies),
-
-                        const SizedBox(height: 20),
-
-                        _buildSectionTitle("Now Playing"),
-                        _buildMovieList(state.nowPlayingMovies),
+                        if (state.trendingMovies.isNotEmpty) ...[
+                          _buildSectionTitle("Trending"),
+                          _buildMovieList(state.trendingMovies),
+                          const SizedBox(height: 20),
+                        ],
+                        if (state.nowPlayingMovies.isNotEmpty) ...[
+                          _buildSectionTitle("Now Playing"),
+                          _buildMovieList(state.nowPlayingMovies),
+                        ],
                       ],
                     ),
                   ),

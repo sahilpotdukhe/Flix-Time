@@ -1,23 +1,12 @@
-# Core Flutter engine
--keep class io.flutter.embedding.** { *; }
--dontwarn io.flutter.embedding.**
-
-# Common Flutter plugins
--keep class io.flutter.plugins.** { *; }
--dontwarn io.flutter.plugins.**
-
-# Keep main activity
--keep class com.example.tmdb_movies.MainActivity { *; }
-
-# Model classes (adjust this if your package is different)
--keep class com.example.tmdb_movies.models.** { *; }
-
-# Keep Hive adapters (optional)
--keep class **.TypeAdapter { *; }
-
+# Retrofit & Dio
 -keep class retrofit2.** { *; }
--dontwarn retrofit2.**
+-keep class okhttp3.** { *; }
+-keep class com.squareup.moshi.** { *; }
 
+# Your models (adjust package name)
+-keep class com.your.package.models.** { *; }
 
-# AndroidX
--dontwarn androidx.**
+# Prevent obfuscation of your API interfaces and models
+-keepclassmembers class * {
+    @retrofit2.http.* <methods>;
+}
