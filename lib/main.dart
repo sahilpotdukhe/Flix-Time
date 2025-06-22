@@ -12,6 +12,7 @@ import 'package:tmdb_movies/viewmodels/bookmarks/bookmarks_event.dart';
 import 'package:tmdb_movies/viewmodels/home/home_bloc.dart';
 import 'package:tmdb_movies/viewmodels/home/home_events.dart';
 import 'package:tmdb_movies/views/home/home_screen.dart';
+import 'package:tmdb_movies/views/splash/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -76,7 +77,7 @@ class MyApp extends StatelessWidget {
             scaffoldBackgroundColor: Colors.black,
             appBarTheme: const AppBarTheme(backgroundColor: Colors.black),
           ),
-          home: const HomeScreen(),
+          home: const SplashScreen(),
         ),
       ),
     );
