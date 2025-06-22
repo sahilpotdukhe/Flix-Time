@@ -2,6 +2,7 @@ import 'package:dio/dio.dart';
 import 'package:retrofit/http.dart';
 import 'package:tmdb_movies/models/movie_list_response.dart';
 import 'package:tmdb_movies/models/movie_model.dart';
+import 'package:tmdb_movies/models/movie_videos_response.dart';
 
 part 'tmdb_api.g.dart';
 
@@ -31,4 +32,12 @@ abstract class TMDBApi {
     @Query("api_key") String apiKey,
     @Query("query") String query,
   );
+
+  @GET('movie/{movie_id}/videos')
+  Future<MovieVideosResponse> getMovieVideos(
+      @Path('movie_id') int id,
+      @Query('api_key') String apiKey,
+      @Query('language') String lang,
+      );
+
 }

@@ -104,6 +104,31 @@ class MovieRepositoryImp implements MovieRepository {
   }
 
   @override
+  Future<String?> getMovieTrailerKey(int movieId) async {
+    try {
+      if (!await _isConnected()) throw Exception("Offline");
+
+      final resp = await tmdbApi.getMovieVideos(movieId, apiKey, 'en-US');
+
+      final trailerList = resp.results
+          .where((v) => v.site.toLowerCase() == 'youtube' && v.type.toLowerCase() == 'trailer')
+          .toList();
+
+      if (trailerList.isNotEmpty) {
+        return trailerList.first.key;
+      }
+
+      return null;
+    } catch (e) {
+      print('⚠️ Trailer fetch failed: $e');
+      return null;
+    }
+  }
+
+
+
+
+  @override
   List<MovieModel> getBookMarkedMovies() {
     return bookmarksBox.values.toList();
   }
