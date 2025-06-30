@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tmdb_movies/data/repositories/movie_repository.dart';
 import 'package:tmdb_movies/viewmodels/home/home_events.dart';
@@ -9,6 +11,8 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
   HomeBloc({required this.movieRepository}) : super(const HomeState()) {
     on<FetchTrendingMovies>(_onFetchTrendingMovies);
     on<FetchNowPlayingMovies>(_onFetchNowPlayingMovies);
+    on<FetchPopularMovies>(_onFetchPopularMovies);
+    on<FetchTopRatedMovies>(_onFetchTopRatedMovies);
   }
 
   Future<void> _onFetchTrendingMovies(
@@ -20,7 +24,6 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
       final trendingMovies = await movieRepository.getTrendingMovies();
       emit(state.copyWith(trendingMovies: trendingMovies, isLoading: false));
     } catch (e) {
-      print("Trending error: $e"); // ✅ Add this
       emit(
         state.copyWith(
           isLoading: false,
@@ -45,6 +48,42 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         state.copyWith(
           isLoading: false,
           errorMessage: "Failed to fetch now playing movies",
+        ),
+      );
+    }
+  }
+
+  Future<void> _onFetchPopularMovies(
+    FetchPopularMovies event,
+    Emitter<HomeState> emit,
+  ) async {
+    emit(state.copyWith(isLoading: true, errorMessage: null));
+    try {
+      final popularMovies = await movieRepository.getPopularMovies();
+      emit(state.copyWith(isLoading: false, popularMovies: popularMovies));
+    } catch (e) {
+      emit(
+        state.copyWith(
+          isLoading: false,
+          errorMessage: "Failed to fetch popular movies",
+        ),
+      );
+    }
+  }
+
+  Future<void> _onFetchTopRatedMovies(
+    FetchTopRatedMovies event,
+    Emitter<HomeState> emit,
+  ) async {
+    emit(state.copyWith(isLoading: true, errorMessage: null));
+    try {
+      final topRated = await movieRepository.getTopRatedMovies();
+      emit(state.copyWith(isLoading: false, topRatedMovies: topRated));
+    } catch (e) {
+      emit(
+        state.copyWith(
+          isLoading: false,
+          errorMessage: "Failed to fetch top rated movies",
         ),
       );
     }

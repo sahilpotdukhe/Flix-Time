@@ -29,6 +29,10 @@ class MovieModel {
   @JsonKey(name: 'vote_average')
   final double voteAverage;
 
+  @HiveField(6)
+  @JsonKey(name: 'tagline')
+  final String? tagline;
+
   MovieModel({
     required this.id,
     required this.title,
@@ -36,6 +40,7 @@ class MovieModel {
     required this.overview,
     required this.releaseDate,
     required this.voteAverage,
+    this.tagline,
   });
 
   factory MovieModel.fromJson(Map<String, dynamic> json) =>

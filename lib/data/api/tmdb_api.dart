@@ -20,6 +20,21 @@ abstract class TMDBApi {
   Future<MovieListResponse> getNowPlayingMovies(
     @Query("api_key") String apiKey,
   );
+  
+  @GET("movie/top_rated")
+  Future<MovieListResponse> getTopRatedMovies(
+      @Query("api_key") String apiKey,
+  );
+
+  @GET("movie/popular")
+  Future<MovieListResponse> getPopularMovies(
+      @Query("api_key") String apiKey,
+);
+
+  @GET("movie/upcoming")
+  Future<MovieListResponse> getUpcomingMovies(
+      @Query("api_key") String apiKey,
+);
 
   @GET("movie/{movie_id}")
   Future<MovieModel> getMovieDetails(

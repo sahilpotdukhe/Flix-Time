@@ -9,6 +9,8 @@ class MovieRepositoryImp implements MovieRepository {
   final TMDBApi tmdbApi;
   final Box<MovieModel> trendingBox;
   final Box<MovieModel> nowPlayingBox;
+  final Box<MovieModel> popularBox;
+  final Box<MovieModel> topRatedBox;
   final Box<MovieModel> movieDetailsBox;
   final Box<MovieModel> bookmarksBox;
   final String apiKey;
@@ -16,6 +18,8 @@ class MovieRepositoryImp implements MovieRepository {
   MovieRepositoryImp({
     required this.tmdbApi,
     required this.trendingBox,
+    required this.popularBox,
+    required this.topRatedBox,
     required this.nowPlayingBox,
     required this.movieDetailsBox,
     required this.bookmarksBox,
@@ -65,6 +69,44 @@ class MovieRepositoryImp implements MovieRepository {
     } catch (e, stack) {
       log("Error fetching now playing movies: $e", stackTrace: stack);
       final cachedMovies = nowPlayingBox.values.toList();
+      return cachedMovies;
+    }
+  }
+
+  @override
+  Future<List<MovieModel>> getPopularMovies() async{
+    try{
+      if(!await _isConnected()) throw Exception("offline");
+
+      final response = await tmdbApi.getPopularMovies(apiKey);
+      final movies = response.results;
+      await popularBox.clear();
+      for(final movie in movies){
+        await popularBox.put(movie.id.toString(),movie);
+      }
+      return movies;
+    }catch(e){
+      log("Error fetching popular movies: $e");
+      final cachedMovies = popularBox.values.toList();
+      return cachedMovies;
+    }
+  }
+
+  @override
+  Future<List<MovieModel>> getTopRatedMovies() async{
+    try{
+      if(!await _isConnected()) throw Exception("offline");
+      final response = await tmdbApi.getTopRatedMovies(apiKey);
+      final movies = response.results;
+      await topRatedBox.clear();
+
+      for(final movie in movies){
+        await topRatedBox.put(movie.id.toString(),movie);
+      }
+      return movies;
+    }catch(e){
+      log("Error fetching topRated movies: $e");
+      final cachedMovies = topRatedBox.values.toList();
       return cachedMovies;
     }
   }
@@ -149,4 +191,6 @@ class MovieRepositoryImp implements MovieRepository {
       log("Added bookmark: ${movie.title}");
     }
   }
+
+
 }

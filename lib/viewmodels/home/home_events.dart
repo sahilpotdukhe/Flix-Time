@@ -8,3 +8,7 @@ abstract class HomeEvent extends Equatable {
 class FetchTrendingMovies extends HomeEvent {}
 
 class FetchNowPlayingMovies extends HomeEvent {}
+
+class FetchTopRatedMovies extends HomeEvent {}
+
+class FetchPopularMovies extends HomeEvent {}
