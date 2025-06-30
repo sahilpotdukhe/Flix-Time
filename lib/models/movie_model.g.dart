@@ -23,13 +23,14 @@ class MovieModelAdapter extends TypeAdapter<MovieModel> {
       overview: fields[3] as String,
       releaseDate: fields[4] as String,
       voteAverage: fields[5] as double,
+      tagline: fields[6] as String?,
     );
   }
 
   @override
   void write(BinaryWriter writer, MovieModel obj) {
     writer
-      ..writeByte(6)
+      ..writeByte(7)
       ..writeByte(0)
       ..write(obj.id)
       ..writeByte(1)
@@ -41,7 +42,9 @@ class MovieModelAdapter extends TypeAdapter<MovieModel> {
       ..writeByte(4)
       ..write(obj.releaseDate)
       ..writeByte(5)
-      ..write(obj.voteAverage);
+      ..write(obj.voteAverage)
+      ..writeByte(6)
+      ..write(obj.tagline);
   }
 
   @override
@@ -66,6 +69,7 @@ MovieModel _$MovieModelFromJson(Map<String, dynamic> json) => MovieModel(
       overview: json['overview'] as String,
       releaseDate: json['release_date'] as String,
       voteAverage: (json['vote_average'] as num).toDouble(),
+      tagline: json['tagline'] as String?,
     );
 
 Map<String, dynamic> _$MovieModelToJson(MovieModel instance) =>
@@ -76,4 +80,5 @@ Map<String, dynamic> _$MovieModelToJson(MovieModel instance) =>
       'overview': instance.overview,
       'release_date': instance.releaseDate,
       'vote_average': instance.voteAverage,
+      'tagline': instance.tagline,
     };

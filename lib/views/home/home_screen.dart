@@ -84,6 +84,12 @@ class HomeScreen extends StatelessWidget {
                             context
                                 .read<HomeBloc>()
                                 .add(FetchNowPlayingMovies());
+                            context
+                                .read<HomeBloc>()
+                                .add(FetchPopularMovies());
+                            context
+                                .read<HomeBloc>()
+                                .add(FetchTopRatedMovies());
                           },
                           icon: const Icon(Icons.refresh),
                           label: const Text("Retry"),
@@ -97,6 +103,8 @@ class HomeScreen extends StatelessWidget {
                   onRefresh: () async {
                     context.read<HomeBloc>().add(FetchTrendingMovies());
                     context.read<HomeBloc>().add(FetchNowPlayingMovies());
+                    context.read<HomeBloc>().add(FetchPopularMovies());
+                    context.read<HomeBloc>().add(FetchTopRatedMovies());
                   },
                   child: SingleChildScrollView(
                     physics: const AlwaysScrollableScrollPhysics(),
@@ -105,13 +113,21 @@ class HomeScreen extends StatelessWidget {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         if (state.trendingMovies.isNotEmpty) ...[
-                          _buildSectionTitle("Trending"),
+                          _buildSectionTitle("Trending Movies"),
                           _buildMovieList(state.trendingMovies),
                           const SizedBox(height: 20),
                         ],
                         if (state.nowPlayingMovies.isNotEmpty) ...[
-                          _buildSectionTitle("Now Playing"),
+                          _buildSectionTitle("Now Playing Movies"),
                           _buildMovieList(state.nowPlayingMovies),
+                        ],
+                        if (state.topRatedMovies.isNotEmpty) ...[
+                          _buildSectionTitle("Top Rated Movies"),
+                          _buildMovieList(state.topRatedMovies),
+                        ],
+                        if (state.popularMovies.isNotEmpty) ...[
+                          _buildSectionTitle("Popular Movies"),
+                          _buildMovieList(state.popularMovies),
                         ],
                       ],
                     ),

@@ -23,12 +23,14 @@ class MovieDetailsScreen extends StatelessWidget {
     return MultiBlocProvider(
       providers: [
         BlocProvider<MovieDetailsBloc>(
-          create: (_) => MovieDetailsBloc(movieRepository: context.read())
-            ..add(FetchMovieDetails(movieId: movieId)),
+          create:
+              (_) =>
+                  MovieDetailsBloc(movieRepository: context.read())
+                    ..add(FetchMovieDetails(movieId: movieId)),
         ),
         BlocProvider<TrailerBloc>(
-          create: (_) => TrailerBloc(context.read())
-            ..add(FetchTrailer(movieId)),
+          create:
+              (_) => TrailerBloc(context.read())..add(FetchTrailer(movieId)),
         ),
       ],
       child: _MovieDetailsView(),
@@ -67,24 +69,40 @@ class _MovieDetailsViewState extends State<_MovieDetailsView> {
         backgroundColor: Colors.black87,
         elevation: 0,
         centerTitle: true,
-        title: const Text('Movie Details', style: TextStyle(color: Colors.white)),
+        title: const Text(
+          'Movie Details',
+          style: TextStyle(color: Colors.white),
+        ),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: BlocBuilder<MovieDetailsBloc, MovieDetailsState>(
         builder: (context, state) {
           if (state.isLoading) {
-            return const Center(child: CircularProgressIndicator(color: Colors.redAccent));
+            return const Center(
+              child: CircularProgressIndicator(color: Colors.redAccent),
+            );
           }
           if (state.error != null) {
-            return Center(child: Text("Error: ${state.error!}", style: TextStyle(color: Colors.white)));
+            return Center(
+              child: Text(
+                "Error: ${state.error!}",
+                style: TextStyle(color: Colors.white),
+              ),
+            );
           }
 
           final movie = state.movie;
           if (movie == null) {
-            return const Center(child: Text("Movie not found", style: TextStyle(color: Colors.white)));
+            return const Center(
+              child: Text(
+                "Movie not found",
+                style: TextStyle(color: Colors.white),
+              ),
+            );
           }
 
-          final posterUrl = 'https://image.tmdb.org/t/p/w500${movie.posterPath}';
+          final posterUrl =
+              'https://image.tmdb.org/t/p/w500${movie.posterPath}';
 
           return SingleChildScrollView(
             padding: const EdgeInsets.all(16),
@@ -103,34 +121,47 @@ class _MovieDetailsViewState extends State<_MovieDetailsView> {
                 ),
                 const SizedBox(height: 16),
 
-                /// 🔖 Bookmark Button
                 Center(
                   child: BlocBuilder<BookmarksBloc, BookmarksState>(
                     builder: (context, bState) {
-                      final isBookmarked = bState.bookmarks.any((m) => m.id == movie.id);
+                      final isBookmarked = bState.bookmarks.any(
+                        (m) => m.id == movie.id,
+                      );
                       return GestureDetector(
                         onTap: () {
-                          context.read<BookmarksBloc>().add(ToggleBookmark(movie));
+                          context.read<BookmarksBloc>().add(
+                            ToggleBookmark(movie),
+                          );
                         },
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
                           decoration: BoxDecoration(
                             color: Colors.black,
                             borderRadius: BorderRadius.circular(30),
                             boxShadow: [
-                              BoxShadow(color: Colors.black.withOpacity(0.3), blurRadius: 6),
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.3),
+                                blurRadius: 6,
+                              ),
                             ],
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(
-                                isBookmarked ? Icons.bookmark : Icons.bookmark_border,
+                                isBookmarked
+                                    ? Icons.bookmark
+                                    : Icons.bookmark_border,
                                 color: Colors.amber,
                               ),
                               const SizedBox(width: 8),
                               Text(
-                                isBookmarked ? "Bookmarked" : "Add to Bookmarks",
+                                isBookmarked
+                                    ? "Bookmarked"
+                                    : "Add to Bookmarks",
                                 style: const TextStyle(color: Colors.white),
                               ),
                             ],
@@ -142,14 +173,28 @@ class _MovieDetailsViewState extends State<_MovieDetailsView> {
                 ),
                 const SizedBox(height: 24),
 
-                Text(movie.title, style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700, color: Colors.white)),
+                Text(
+                  movie.title,
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.w700,
+                    color: Colors.white,
+                  ),
+                ),
                 const SizedBox(height: 10),
 
                 Row(
                   children: [
-                    const Icon(Icons.calendar_today_rounded, size: 18, color: Colors.white70),
+                    const Icon(
+                      Icons.calendar_today_rounded,
+                      size: 18,
+                      color: Colors.white70,
+                    ),
                     const SizedBox(width: 6),
-                    Text(movie.releaseDate ?? 'Unknown', style: const TextStyle(color: Colors.white70)),
+                    Text(
+                      "Release Date: ${movie.releaseDate}" ?? 'Unknown',
+                      style: const TextStyle(color: Colors.white70),
+                    ),
                   ],
                 ),
                 const SizedBox(height: 8),
@@ -157,16 +202,50 @@ class _MovieDetailsViewState extends State<_MovieDetailsView> {
                   children: [
                     const Icon(Icons.star, color: Colors.amberAccent, size: 20),
                     const SizedBox(width: 6),
-                    Text(movie.voteAverage.toString(), style: const TextStyle(color: Colors.amberAccent)),
+                    Text(
+                      "Rating: ${movie.voteAverage.toStringAsFixed(2)}/10",
+                      style: const TextStyle(color: Colors.amberAccent),
+                    ),
                   ],
                 ),
+                const SizedBox(height: 8),
+                (movie.tagline != null && movie.tagline!.isNotEmpty)
+                    ? Row(
+                      children: [
+                        const Icon(
+                          Icons.tag,
+                          color: Colors.amberAccent,
+                          size: 20,
+                        ),
+                        const SizedBox(width: 6),
+                        Text(
+                          "Tagline: ${movie!.tagline}",
+                          style: const TextStyle(color: Colors.amberAccent),
+                        ),
+                      ],
+                    )
+                    : SizedBox.shrink(),
+
                 const SizedBox(height: 24),
 
-                const Text("Overview", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white)),
+                const Text(
+                  "Overview",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
                 const SizedBox(height: 10),
                 Text(
-                  movie.overview.isNotEmpty ? movie.overview : 'No description available.',
-                  style: const TextStyle(fontSize: 15, height: 1.5, color: Colors.white70),
+                  movie.overview.isNotEmpty
+                      ? movie.overview
+                      : 'No description available.',
+                  style: const TextStyle(
+                    fontSize: 15,
+                    height: 1.5,
+                    color: Colors.white70,
+                  ),
                 ),
                 const SizedBox(height: 24),
 
@@ -232,7 +311,6 @@ class _MovieDetailsViewState extends State<_MovieDetailsView> {
                     );
                   },
                 ),
-
               ],
             ),
           );

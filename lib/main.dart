@@ -11,7 +11,6 @@ import 'package:tmdb_movies/viewmodels/bookmarks/bookmarks_bloc.dart';
 import 'package:tmdb_movies/viewmodels/bookmarks/bookmarks_event.dart';
 import 'package:tmdb_movies/viewmodels/home/home_bloc.dart';
 import 'package:tmdb_movies/viewmodels/home/home_events.dart';
-import 'package:tmdb_movies/views/home/home_screen.dart';
 import 'package:tmdb_movies/views/splash/splash_screen.dart';
 
 void main() async {
@@ -23,6 +22,8 @@ void main() async {
 
   final trendingBox = await Hive.openBox<MovieModel>('trendingBox');
   final nowPlayingBox = await Hive.openBox<MovieModel>('nowPlayingBox');
+  final popularBox = await Hive.openBox<MovieModel>('popularBox');
+  final topRatedBox = await Hive.openBox<MovieModel>('topRatedBox');
   final detailsBox = await Hive.openBox<MovieModel>('movieDetailsBox');
   final bookmarksBox = await Hive.openBox<MovieModel>('bookmarksBox');
 
@@ -38,9 +39,11 @@ void main() async {
     tmdbApi: tmdbApi,
     trendingBox: trendingBox,
     nowPlayingBox: nowPlayingBox,
+    popularBox: popularBox,
+    topRatedBox: topRatedBox,
     movieDetailsBox: detailsBox,
     bookmarksBox: bookmarksBox,
-    apiKey: apiKey,
+    apiKey: apiKey
   );
 
   runApp(MyApp(movieRepository: movieRepository));
@@ -61,7 +64,9 @@ class MyApp extends StatelessWidget {
                 (_) =>
                     HomeBloc(movieRepository: movieRepository)
                       ..add(FetchTrendingMovies())
-                      ..add(FetchNowPlayingMovies()),
+                      ..add(FetchNowPlayingMovies())
+                      ..add(FetchPopularMovies())
+                      ..add(FetchTopRatedMovies()),
           ),
           BlocProvider(
             create:
