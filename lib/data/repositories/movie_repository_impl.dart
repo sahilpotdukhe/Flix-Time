@@ -8,24 +8,12 @@ import 'package:tmdb_movies/models/movie_model.dart';
 
 class MovieRepositoryImp implements MovieRepository {
   final TMDBApi tmdbApi;
-  final Box<MovieModel> trendingBox;
-  final Box<MovieModel> nowPlayingBox;
-  final Box<MovieModel> popularBox;
-  final Box<MovieModel> topRatedBox;
-  // final Box<List<CastModel>> castsBox;
-  final Box<MovieModel> movieDetailsBox;
-  final Box<MovieModel> bookmarksBox;
+  final Box<MovieModel> moviesBox;
   final String apiKey;
 
   MovieRepositoryImp({
     required this.tmdbApi,
-    required this.trendingBox,
-    required this.popularBox,
-    required this.topRatedBox,
-    required this.nowPlayingBox,
-    // required this.castsBox,
-    required this.movieDetailsBox,
-    required this.bookmarksBox,
+    required this.moviesBox,
     required this.apiKey,
   });
 
@@ -34,24 +22,41 @@ class MovieRepositoryImp implements MovieRepository {
     return result != ConnectivityResult.none;
   }
 
+  // Helper: Prefix keys
+  String _createKey(String prefix, int id) => '${prefix}_$id';
+
+  // Remove keys by prefix
+  Future<void> _clearCategory(String prefix) async {
+    final keys =
+        moviesBox.keys.where((k) => k.toString().startsWith(prefix)).toList();
+    await moviesBox.deleteAll(keys);
+  }
+
+  List<MovieModel> _getCachedByPrefix(String prefix) {
+    return moviesBox.toMap().entries
+        .where((e) => e.key.toString().startsWith(prefix))
+        .map((e) => e.value)
+        .toList();
+  }
+
   @override
   Future<List<MovieModel>> getTrendingMovies() async {
     try {
       if (!await _isConnected()) throw Exception("Offline");
 
       final response = await tmdbApi.getTrendingMovies(apiKey, 'en-US');
-      final movies = response.results;
+      final trendingMovies = response.results;
 
-      await trendingBox.clear();
-      for (final movie in movies) {
-        await trendingBox.put(movie.id.toString(), movie);
+      // store in local storage with key as trending_1234 and value as movieModel
+      await _clearCategory('trending');
+      for (final movie in trendingMovies) {
+        await moviesBox.put(_createKey('trending', movie.id), movie);
       }
 
-      return movies;
-    } catch (e, stack) {
-      log("Error fetching trending movies: $e", stackTrace: stack);
-      final cachedMovies = trendingBox.values.toList();
-      return cachedMovies; // ✅ return empty list if cache empty
+      return trendingMovies;
+    } catch (e) {
+      // return from local storage
+      return _getCachedByPrefix('trending');
     }
   }
 
@@ -61,64 +66,60 @@ class MovieRepositoryImp implements MovieRepository {
       if (!await _isConnected()) throw Exception("Offline");
 
       final response = await tmdbApi.getNowPlayingMovies(apiKey);
-      final movies = response.results;
+      final nowPlayingMovies = response.results;
 
-      await nowPlayingBox.clear();
-      for (final movie in movies) {
-        await nowPlayingBox.put(movie.id.toString(), movie);
+      await _clearCategory('nowPlaying');
+      for (final movie in nowPlayingMovies) {
+        await moviesBox.put(_createKey('nowPlaying', movie.id), movie);
       }
 
-      return movies;
-    } catch (e, stack) {
-      log("Error fetching now playing movies: $e", stackTrace: stack);
-      final cachedMovies = nowPlayingBox.values.toList();
-      return cachedMovies;
+      return nowPlayingMovies;
+    } catch (e) {
+      return _getCachedByPrefix('nowPlaying');
     }
   }
 
   @override
-  Future<List<MovieModel>> getPopularMovies() async{
-    try{
-      if(!await _isConnected()) throw Exception("offline");
+  Future<List<MovieModel>> getPopularMovies() async {
+    try {
+      if (!await _isConnected()) throw Exception("offline");
 
       final response = await tmdbApi.getPopularMovies(apiKey);
-      final movies = response.results;
-      await popularBox.clear();
-      for(final movie in movies){
-        await popularBox.put(movie.id.toString(),movie);
+      final popularMovies = response.results;
+
+      await _clearCategory('popular');
+      for (final movie in popularMovies) {
+        await moviesBox.put(_createKey('popular', movie.id), movie);
       }
-      return movies;
-    }catch(e){
-      log("Error fetching popular movies: $e");
-      final cachedMovies = popularBox.values.toList();
-      return cachedMovies;
+
+      return popularMovies;
+    } catch (e) {
+      return _getCachedByPrefix('popular');
     }
   }
 
   @override
-  Future<List<MovieModel>> getTopRatedMovies() async{
-    try{
-      if(!await _isConnected()) throw Exception("offline");
+  Future<List<MovieModel>> getTopRatedMovies() async {
+    try {
+      if (!await _isConnected()) throw Exception("offline");
       final response = await tmdbApi.getTopRatedMovies(apiKey);
-      final movies = response.results;
-      await topRatedBox.clear();
+      final topRatedMovies = response.results;
 
-      for(final movie in movies){
-        await topRatedBox.put(movie.id.toString(),movie);
+      await _clearCategory('popular');
+      for (final movie in topRatedMovies) {
+        await moviesBox.put(_createKey('topRated', movie.id), movie);
       }
-      return movies;
-    }catch(e){
-      log("Error fetching topRated movies: $e");
-      final cachedMovies = topRatedBox.values.toList();
-      return cachedMovies;
+
+      return topRatedMovies;
+    } catch (e) {
+      return _getCachedByPrefix('topRated');
     }
   }
-  
+
   @override
   Future<MovieModel> getMovieDetails(int movieId) async {
-    final key = movieId.toString();
-
-    final cached = movieDetailsBox.get(key);
+    final key = _createKey('details', movieId);
+    final cached = moviesBox.get(key);
     if (cached != null) return cached;
 
     if (!await _isConnected()) {
@@ -127,33 +128,23 @@ class MovieRepositoryImp implements MovieRepository {
     }
 
     try {
-      final movie = await tmdbApi.getMovieDetails(movieId, apiKey);
-      await movieDetailsBox.put(key, movie);
-      return movie;
-    } catch (e, stack) {
-      log("Failed to fetch movie details: $e", stackTrace: stack);
+      final movieDetails = await tmdbApi.getMovieDetails(movieId, apiKey);
+      await moviesBox.put(key, movieDetails);
+      return movieDetails;
+    } catch (e) {
       throw Exception("Failed to load movie details.");
     }
   }
 
   @override
-  Future<List<CastModel>> getMoviesCast(int movieId) async{
-    final movieIdForCast = movieId.toString();
-
-    // final cached = castsBox.get(movieIdForCast);
-    // if (cached != null) return cached;
-
+  Future<List<CastModel>> getMoviesCast(int movieId) async {
     if (!await _isConnected()) {
-      throw Exception("You are offline. No cached details available.");
+      throw Exception("You are offline. No cached cast available.");
     }
-    try{
+    try {
       final response = await tmdbApi.getMovieCast(movieId, apiKey);
-      final castsList = response.casts;
-      // await castsBox.put(movieIdForCast, castsList);
-      return castsList;
-    }catch(e){
-      // final cached = castsBox.get(movieIdForCast);
-      // return cached ?? [];
+      return response.casts;
+    } catch (e) {
       return [];
     }
   }
@@ -164,8 +155,8 @@ class MovieRepositoryImp implements MovieRepository {
       if (!await _isConnected()) throw Exception("Offline");
       final response = await tmdbApi.searchMovie(apiKey, query);
       return response.results;
-    } catch (e, stack) {
-      log("Search error: $e", stackTrace: stack);
+    } catch (e) {
+      log("Search error: $e");
       return [];
     }
   }
@@ -177,9 +168,14 @@ class MovieRepositoryImp implements MovieRepository {
 
       final resp = await tmdbApi.getMovieVideos(movieId, apiKey, 'en-US');
 
-      final trailerList = resp.results
-          .where((v) => v.site.toLowerCase() == 'youtube' && v.type.toLowerCase() == 'trailer')
-          .toList();
+      final trailerList =
+          resp.results
+              .where(
+                (v) =>
+                    v.site.toLowerCase() == 'youtube' &&
+                    v.type.toLowerCase() == 'trailer',
+              )
+              .toList();
 
       if (trailerList.isNotEmpty) {
         return trailerList.first.key;
@@ -187,37 +183,32 @@ class MovieRepositoryImp implements MovieRepository {
 
       return null;
     } catch (e) {
-      print('⚠️ Trailer fetch failed: $e');
+      print('Trailer fetch failed: $e');
       return null;
     }
   }
 
-
-
-
-  @override
-  List<MovieModel> getBookMarkedMovies() {
-    return bookmarksBox.values.toList();
-  }
-
-  @override
-  bool isBookmarked(int movieId) {
-    return bookmarksBox.containsKey(movieId.toString());
-  }
-
   @override
   Future<void> toggleBookmark(MovieModel movie) async {
-    final key = movie.id.toString();
-    if (bookmarksBox.containsKey(key)) {
-      await bookmarksBox.delete(key);
+    final key = _createKey('bookmark', movie.id);
+
+    if (moviesBox.containsKey(key)) {
+      await moviesBox.delete(key);
       log("Removed bookmark: ${movie.title}");
     } else {
-      await bookmarksBox.put(key, movie);
+      await moviesBox.put(key, movie);
       log("Added bookmark: ${movie.title}");
     }
   }
 
+  @override
+  List<MovieModel> getBookMarkedMovies() {
+    return _getCachedByPrefix('bookmark');
+  }
 
-
-
+  @override
+  bool isBookmarked(int movieId) {
+    final key = _createKey('bookmark', movieId);
+    return moviesBox.containsKey(key);
+  }
 }

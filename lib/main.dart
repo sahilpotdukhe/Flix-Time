@@ -20,15 +20,8 @@ void main() async {
 
   await Hive.initFlutter();
   Hive.registerAdapter(MovieModelAdapter());
-  // Hive.registerAdapter(CastModelAdapter());
 
-  final trendingBox = await Hive.openBox<MovieModel>('trendingBox');
-  final nowPlayingBox = await Hive.openBox<MovieModel>('nowPlayingBox');
-  final popularBox = await Hive.openBox<MovieModel>('popularBox');
-  final topRatedBox = await Hive.openBox<MovieModel>('topRatedBox');
-  // final castBox = await Hive.openBox<CastModel>('castsBox');
-  final detailsBox = await Hive.openBox<MovieModel>('movieDetailsBox');
-  final bookmarksBox = await Hive.openBox<MovieModel>('bookmarksBox');
+  final moviesBox = await Hive.openBox<MovieModel>('moviesBox');
 
   final dio = Dio();
   final apiKey = dotenv.env['TMDB_API_KEY'];
@@ -40,13 +33,7 @@ void main() async {
   final tmdbApi = TMDBApi(dio);
   final MovieRepository movieRepository = MovieRepositoryImp(
     tmdbApi: tmdbApi,
-    trendingBox: trendingBox,
-    nowPlayingBox: nowPlayingBox,
-    popularBox: popularBox,
-    topRatedBox: topRatedBox,
-    // castsBox: castBox,
-    movieDetailsBox: detailsBox,
-    bookmarksBox: bookmarksBox,
+    moviesBox: moviesBox,
     apiKey: apiKey
   );
 
