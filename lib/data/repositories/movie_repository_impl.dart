@@ -3,6 +3,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:hive/hive.dart';
 import 'package:tmdb_movies/data/api/tmdb_api.dart';
 import 'package:tmdb_movies/data/repositories/movie_repository.dart';
+import 'package:tmdb_movies/models/cast_model.dart';
 import 'package:tmdb_movies/models/movie_model.dart';
 
 class MovieRepositoryImp implements MovieRepository {
@@ -11,6 +12,7 @@ class MovieRepositoryImp implements MovieRepository {
   final Box<MovieModel> nowPlayingBox;
   final Box<MovieModel> popularBox;
   final Box<MovieModel> topRatedBox;
+  // final Box<List<CastModel>> castsBox;
   final Box<MovieModel> movieDetailsBox;
   final Box<MovieModel> bookmarksBox;
   final String apiKey;
@@ -21,6 +23,7 @@ class MovieRepositoryImp implements MovieRepository {
     required this.popularBox,
     required this.topRatedBox,
     required this.nowPlayingBox,
+    // required this.castsBox,
     required this.movieDetailsBox,
     required this.bookmarksBox,
     required this.apiKey,
@@ -134,6 +137,28 @@ class MovieRepositoryImp implements MovieRepository {
   }
 
   @override
+  Future<List<CastModel>> getMoviesCast(int movieId) async{
+    final movieIdForCast = movieId.toString();
+
+    // final cached = castsBox.get(movieIdForCast);
+    // if (cached != null) return cached;
+
+    if (!await _isConnected()) {
+      throw Exception("You are offline. No cached details available.");
+    }
+    try{
+      final response = await tmdbApi.getMovieCast(movieId, apiKey);
+      final castsList = response.casts;
+      // await castsBox.put(movieIdForCast, castsList);
+      return castsList;
+    }catch(e){
+      // final cached = castsBox.get(movieIdForCast);
+      // return cached ?? [];
+      return [];
+    }
+  }
+
+  @override
   Future<List<MovieModel>> searchMovies(String query) async {
     try {
       if (!await _isConnected()) throw Exception("Offline");
@@ -191,6 +216,8 @@ class MovieRepositoryImp implements MovieRepository {
       log("Added bookmark: ${movie.title}");
     }
   }
+
+
 
 
 }

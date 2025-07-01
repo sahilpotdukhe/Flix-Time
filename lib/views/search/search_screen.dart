@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:tmdb_movies/data/repositories/movie_repository_impl.dart';
 import 'package:tmdb_movies/models/movie_model.dart';
 import 'package:tmdb_movies/viewmodels/search/search_bloc.dart';
 import 'package:tmdb_movies/viewmodels/search/search_event.dart';
@@ -106,11 +107,16 @@ class _SearchView extends StatelessWidget {
 
                     return GestureDetector(
                       onTap: () {
+                        // final movieRepository =
+                        //     context.read<MovieRepositoryImp>();
                         Navigator.push(
                           context,
                           MaterialPageRoute(
                             builder:
-                                (_) => MovieDetailsScreen(movieId: movie.id),
+                                (_) => MovieDetailsScreen(
+                                  // movieRepository: movieRepository,
+                                  movieId: movie.id,
+                                ),
                           ),
                         );
                       },

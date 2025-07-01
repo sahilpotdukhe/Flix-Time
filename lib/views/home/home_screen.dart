@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:tmdb_movies/data/repositories/movie_repository.dart';
+import 'package:tmdb_movies/data/repositories/movie_repository_impl.dart';
 import 'package:tmdb_movies/models/movie_model.dart';
 import 'package:tmdb_movies/viewmodels/home/home_bloc.dart';
 import 'package:tmdb_movies/viewmodels/home/home_events.dart';
@@ -168,57 +170,66 @@ class HomeScreen extends StatelessWidget {
           final posterUrl =
               'https://image.tmdb.org/t/p/w500${movie.posterPath}';
 
-          return GestureDetector(
-            onTap: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (_) => MovieDetailsScreen(movieId: movie.id),
-                ),
-              );
-            },
-            child: Container(
-              width: 140,
-              decoration: BoxDecoration(
-                color: Colors.grey[900],
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.5),
-                    offset: const Offset(2, 4),
-                    blurRadius: 6,
-                  ),
-                ],
-              ),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  ClipRRect(
-                    borderRadius: const BorderRadius.vertical(
-                      top: Radius.circular(16),
-                    ),
-                    child: NetworkImageWithFallback(
-                      imageUrl: posterUrl,
-                      height: 180,
-                      width: 140,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(8.0),
-                    child: Text(
-                      movie.title,
-                      maxLines: 2,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 13,
-                        fontWeight: FontWeight.w500,
+          return Builder(
+            builder: (context) {
+              return GestureDetector(
+                onTap: () {
+                  // final movieRepository = context.read<MovieRepository>();
+
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => MovieDetailsScreen(
+                        movieId: movie.id,
+                        // movieRepository: movieRepository, // pass it directly
                       ),
                     ),
+                  );
+                },
+                child: Container(
+                  width: 140,
+                  decoration: BoxDecoration(
+                    color: Colors.grey[900],
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.5),
+                        offset: const Offset(2, 4),
+                        blurRadius: 6,
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      ClipRRect(
+                        borderRadius: const BorderRadius.vertical(
+                          top: Radius.circular(16),
+                        ),
+                        child: NetworkImageWithFallback(
+                          imageUrl: posterUrl,
+                          height: 180,
+                          width: 140,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Text(
+                          movie.title,
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 13,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            }
           );
         },
       ),

@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:retrofit/http.dart';
+import 'package:tmdb_movies/models/movie_casts_response.dart';
 import 'package:tmdb_movies/models/movie_list_response.dart';
 import 'package:tmdb_movies/models/movie_model.dart';
 import 'package:tmdb_movies/models/movie_videos_response.dart';
@@ -41,6 +42,13 @@ abstract class TMDBApi {
     @Path("movie_id") int movieId,
     @Query("api_key") String apiKey,
   );
+
+  @GET("movie/{movie_id}/credits")
+  Future<MovieCastsResponse> getMovieCast(
+      @Path("movie_id") int movieId,
+      @Query("api_key") String apiKey,
+  );
+
 
   @GET("search/movie")
   Future<MovieListResponse> searchMovie(

@@ -192,6 +192,36 @@ class _TMDBApi implements TMDBApi {
   }
 
   @override
+  Future<MovieCastsResponse> getMovieCast(
+    int movieId,
+    String apiKey,
+  ) async {
+    const _extra = <String, dynamic>{};
+    final queryParameters = <String, dynamic>{r'api_key': apiKey};
+    final _headers = <String, dynamic>{};
+    final Map<String, dynamic>? _data = null;
+    final _result = await _dio
+        .fetch<Map<String, dynamic>>(_setStreamType<MovieCastsResponse>(Options(
+      method: 'GET',
+      headers: _headers,
+      extra: _extra,
+    )
+            .compose(
+              _dio.options,
+              'movie/${movieId}/credits',
+              queryParameters: queryParameters,
+              data: _data,
+            )
+            .copyWith(
+                baseUrl: _combineBaseUrls(
+              _dio.options.baseUrl,
+              baseUrl,
+            ))));
+    final value = MovieCastsResponse.fromJson(_result.data!);
+    return value;
+  }
+
+  @override
   Future<MovieListResponse> searchMovie(
     String apiKey,
     String query,

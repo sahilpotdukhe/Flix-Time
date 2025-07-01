@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:tmdb_movies/viewmodels/casts/cast_bloc.dart';
+import 'package:tmdb_movies/viewmodels/casts/cast_event.dart';
+import 'package:tmdb_movies/viewmodels/casts/cast_state.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import 'package:tmdb_movies/models/movie_model.dart';
 import 'package:tmdb_movies/viewmodels/bookmarks/bookmarks_bloc.dart';
@@ -31,6 +34,12 @@ class MovieDetailsScreen extends StatelessWidget {
         BlocProvider<TrailerBloc>(
           create:
               (_) => TrailerBloc(context.read())..add(FetchTrailer(movieId)),
+        ),
+        BlocProvider<CastBloc>(
+          create:
+              (_) =>
+                  CastBloc(movieRepository: context.read())
+                    ..add(FetchCast(movieId)),
         ),
       ],
       child: _MovieDetailsView(),
@@ -248,7 +257,66 @@ class _MovieDetailsViewState extends State<_MovieDetailsView> {
                   ),
                 ),
                 const SizedBox(height: 24),
-
+                BlocBuilder<CastBloc, CastState>(
+                  builder: (context, cState) {
+                    if (cState.isLoading) {
+                      return const Center(child: CircularProgressIndicator());
+                    }
+                    if (cState.casts.isEmpty) return const SizedBox();
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 24),
+                        const Text("Cast", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
+                        const SizedBox(height: 12),
+                        SizedBox(
+                          height: 200,
+                          child: ListView.separated(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: cState.casts.length,
+                            separatorBuilder: (_,__) => const SizedBox(width: 18),
+                            itemBuilder: (context, i) {
+                              final cast = cState.casts[i];
+                              final url = cast.profileUrl != null
+                                  ? 'https://image.tmdb.org/t/p/w200${cast.profileUrl}'
+                                  : null;
+                              return Column(
+                                children: [
+                                  ClipRRect(
+                                    borderRadius: BorderRadius.circular(60),
+                                    child: url != null
+                                        ? Image.network(url, width: 100, height: 100, fit: BoxFit.cover)
+                                        : Container(
+                                      color: Colors.grey[800],
+                                      width: 80,
+                                      height: 80,
+                                      child: const Icon(Icons.person, size: 40, color: Colors.white30),
+                                    ),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  SizedBox(
+                                    width: 100,
+                                    child: Text(cast.name, textAlign: TextAlign.center, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                                  ),
+                                  SizedBox(
+                                    width: 100,
+                                    child: Text("as ${cast.character}", textAlign: TextAlign.center, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white54, fontSize: 10)),
+                                  ),
+                                  const SizedBox(height: 6),
+                                  SizedBox(
+                                    width: 100,
+                                    child: Text(cast.castType, textAlign: TextAlign.center, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white70, fontSize: 12)),
+                                  ),
+                                ],
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+                SizedBox(height: 24,),
                 BlocBuilder<TrailerBloc, TrailerState>(
                   builder: (context, tState) {
                     if (tState.isLoading) {
