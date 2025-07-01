@@ -42,12 +42,15 @@ class MovieDetailsScreen extends StatelessWidget {
                     ..add(FetchCast(movieId)),
         ),
       ],
-      child: _MovieDetailsView(),
+      child: _MovieDetailsView(movieId: movieId,),
     );
   }
 }
 
 class _MovieDetailsView extends StatefulWidget {
+  final int movieId;
+
+  const _MovieDetailsView({super.key, required this.movieId});
   @override
   State<_MovieDetailsView> createState() => _MovieDetailsViewState();
 }
@@ -91,16 +94,9 @@ class _MovieDetailsViewState extends State<_MovieDetailsView> {
               child: CircularProgressIndicator(color: Colors.redAccent),
             );
           }
-          if (state.error != null) {
-            return Center(
-              child: Text(
-                "Error: ${state.error!}",
-                style: TextStyle(color: Colors.white),
-              ),
-            );
-          }
 
           final movie = state.movie;
+
           if (movie == null) {
             return const Center(
               child: Text(
@@ -110,276 +106,370 @@ class _MovieDetailsViewState extends State<_MovieDetailsView> {
             );
           }
 
+          if (state.error != null) {
+            return RefreshIndicator(
+              onRefresh: () async {
+                context.read<MovieDetailsBloc>().add(FetchMovieDetails(movieId: widget.movieId));
+                context.read<TrailerBloc>().add(FetchTrailer(widget.movieId));
+                context.read<CastBloc>().add(FetchCast(widget.movieId));
+              },
+              child: ListView(
+                physics: const AlwaysScrollableScrollPhysics(),
+                children: [
+                  SizedBox(
+                    height: MediaQuery.of(context).size.height * 0.7,
+                    child: Center(
+                      child: Text(
+                        "Error: ${state.error!}\nPull down to retry.",
+                        textAlign: TextAlign.center,
+                        style: const TextStyle(color: Colors.white, fontSize: 16),
+                      ),
+                    ),
+                  )
+                ],
+              ),
+            );
+          }
+
+
+
           final posterUrl =
               'https://image.tmdb.org/t/p/w500${movie.posterPath}';
 
-          return SingleChildScrollView(
-            padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(16),
-                    child: NetworkImageWithFallback(
-                      imageUrl: posterUrl,
-                      height: 350,
-                      width: 240,
+          return RefreshIndicator(
+            color: Colors.redAccent,
+            onRefresh: () async {
+              context.read<MovieDetailsBloc>().add(
+                FetchMovieDetails(movieId: widget.movieId),
+              );
+              context.read<TrailerBloc>().add(FetchTrailer(widget.movieId));
+              context.read<CastBloc>().add(FetchCast(widget.movieId));
+            },
+            child: SingleChildScrollView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(16),
+                      child: NetworkImageWithFallback(
+                        imageUrl: posterUrl,
+                        height: 350,
+                        width: 240,
+                      ),
                     ),
                   ),
-                ),
-                const SizedBox(height: 16),
+                  const SizedBox(height: 16),
 
-                Center(
-                  child: BlocBuilder<BookmarksBloc, BookmarksState>(
-                    builder: (context, bState) {
-                      final isBookmarked = bState.bookmarks.any(
-                        (m) => m.id == movie.id,
-                      );
-                      return GestureDetector(
-                        onTap: () {
-                          context.read<BookmarksBloc>().add(
-                            ToggleBookmark(movie),
-                          );
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 8,
+                  Center(
+                    child: BlocBuilder<BookmarksBloc, BookmarksState>(
+                      builder: (context, bState) {
+                        final isBookmarked = bState.bookmarks.any(
+                          (m) => m.id == widget.movieId,
+                        );
+                        return GestureDetector(
+                          onTap: () {
+                            context.read<BookmarksBloc>().add(
+                              ToggleBookmark(movie),
+                            );
+                          },
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: Colors.black,
+                              borderRadius: BorderRadius.circular(30),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: Colors.black.withOpacity(0.3),
+                                  blurRadius: 6,
+                                ),
+                              ],
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  isBookmarked
+                                      ? Icons.bookmark
+                                      : Icons.bookmark_border,
+                                  color: Colors.amber,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  isBookmarked
+                                      ? "Bookmarked"
+                                      : "Add to Bookmarks",
+                                  style: const TextStyle(color: Colors.white),
+                                ),
+                              ],
+                            ),
                           ),
-                          decoration: BoxDecoration(
-                            color: Colors.black,
-                            borderRadius: BorderRadius.circular(30),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.3),
-                                blurRadius: 6,
-                              ),
-                            ],
+                        );
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+
+                  Text(
+                    movie.title,
+                    style: const TextStyle(
+                      fontSize: 24,
+                      fontWeight: FontWeight.w700,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.calendar_today_rounded,
+                        size: 18,
+                        color: Colors.white70,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        "Release Date: ${movie.releaseDate}" ?? 'Unknown',
+                        style: const TextStyle(color: Colors.white70),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    children: [
+                      const Icon(
+                        Icons.star,
+                        color: Colors.amberAccent,
+                        size: 20,
+                      ),
+                      const SizedBox(width: 6),
+                      Text(
+                        "Rating: ${movie.voteAverage.toStringAsFixed(2)}/10",
+                        style: const TextStyle(color: Colors.amberAccent),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+                  (movie.tagline != null && movie.tagline!.isNotEmpty)
+                      ? Row(
+                        children: [
+                          const Icon(
+                            Icons.tag,
+                            color: Colors.amberAccent,
+                            size: 20,
                           ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                isBookmarked
-                                    ? Icons.bookmark
-                                    : Icons.bookmark_border,
-                                color: Colors.amber,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                isBookmarked
-                                    ? "Bookmarked"
-                                    : "Add to Bookmarks",
-                                style: const TextStyle(color: Colors.white),
-                              ),
-                            ],
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              "Tagline: ${movie.tagline}",
+                              style: const TextStyle(color: Colors.amberAccent),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
                           ),
-                        ),
+                        ],
+                      )
+                      : SizedBox.shrink(),
+
+                  const SizedBox(height: 24),
+
+                  const Text(
+                    "Overview",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Text(
+                    movie.overview.isNotEmpty
+                        ? movie.overview
+                        : 'No description available.',
+                    style: const TextStyle(
+                      fontSize: 15,
+                      height: 1.5,
+                      color: Colors.white70,
+                    ),
+                  ),
+                  const SizedBox(height: 24),
+                  BlocBuilder<CastBloc, CastState>(
+                    builder: (context, cState) {
+                      if (cState.isLoading) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
+                      if (cState.casts.isEmpty) return const SizedBox();
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const SizedBox(height: 24),
+                          const Text(
+                            "Cast",
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+                          SizedBox(
+                            height: 200,
+                            child: ListView.separated(
+                              scrollDirection: Axis.horizontal,
+                              itemCount: cState.casts.length,
+                              separatorBuilder:
+                                  (_, __) => const SizedBox(width: 18),
+                              itemBuilder: (context, i) {
+                                final cast = cState.casts[i];
+                                final url =
+                                    cast.profileUrl != null
+                                        ? 'https://image.tmdb.org/t/p/w200${cast.profileUrl}'
+                                        : null;
+                                return Column(
+                                  children: [
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(60),
+                                      child:
+                                          url != null
+                                              ? Image.network(
+                                                url,
+                                                width: 100,
+                                                height: 100,
+                                                fit: BoxFit.cover,
+                                              )
+                                              : Container(
+                                                color: Colors.grey[800],
+                                                width: 80,
+                                                height: 80,
+                                                child: const Icon(
+                                                  Icons.person,
+                                                  size: 40,
+                                                  color: Colors.white30,
+                                                ),
+                                              ),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    SizedBox(
+                                      width: 100,
+                                      child: Text(
+                                        cast.name,
+                                        textAlign: TextAlign.center,
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          color: Colors.white70,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ),
+                                    SizedBox(
+                                      width: 100,
+                                      child: Text(
+                                        "as ${cast.character}",
+                                        textAlign: TextAlign.center,
+                                        maxLines: 1,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          color: Colors.white54,
+                                          fontSize: 10,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    SizedBox(
+                                      width: 100,
+                                      child: Text(
+                                        cast.castType,
+                                        textAlign: TextAlign.center,
+                                        maxLines: 2,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(
+                                          color: Colors.white70,
+                                          fontSize: 12,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                );
+                              },
+                            ),
+                          ),
+                        ],
                       );
                     },
                   ),
-                ),
-                const SizedBox(height: 24),
-
-                Text(
-                  movie.title,
-                  style: const TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w700,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 10),
-
-                Row(
-                  children: [
-                    const Icon(
-                      Icons.calendar_today_rounded,
-                      size: 18,
-                      color: Colors.white70,
-                    ),
-                    const SizedBox(width: 6),
-                    Text(
-                      "Release Date: ${movie.releaseDate}" ?? 'Unknown',
-                      style: const TextStyle(color: Colors.white70),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    const Icon(Icons.star, color: Colors.amberAccent, size: 20),
-                    const SizedBox(width: 6),
-                    Text(
-                      "Rating: ${movie.voteAverage.toStringAsFixed(2)}/10",
-                      style: const TextStyle(color: Colors.amberAccent),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                (movie.tagline != null && movie.tagline!.isNotEmpty)
-                    ? Row(
-                      children: [
-                        const Icon(
-                          Icons.tag,
-                          color: Colors.amberAccent,
-                          size: 20,
-                        ),
-                        const SizedBox(width: 6),
-                        Text(
-                          "Tagline: ${movie!.tagline}",
-                          style: const TextStyle(color: Colors.amberAccent),
-                        ),
-                      ],
-                    )
-                    : SizedBox.shrink(),
-
-                const SizedBox(height: 24),
-
-                const Text(
-                  "Overview",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white,
-                  ),
-                ),
-                const SizedBox(height: 10),
-                Text(
-                  movie.overview.isNotEmpty
-                      ? movie.overview
-                      : 'No description available.',
-                  style: const TextStyle(
-                    fontSize: 15,
-                    height: 1.5,
-                    color: Colors.white70,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                BlocBuilder<CastBloc, CastState>(
-                  builder: (context, cState) {
-                    if (cState.isLoading) {
-                      return const Center(child: CircularProgressIndicator());
-                    }
-                    if (cState.casts.isEmpty) return const SizedBox();
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const SizedBox(height: 24),
-                        const Text("Cast", style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: Colors.white)),
-                        const SizedBox(height: 12),
-                        SizedBox(
-                          height: 200,
-                          child: ListView.separated(
-                            scrollDirection: Axis.horizontal,
-                            itemCount: cState.casts.length,
-                            separatorBuilder: (_,__) => const SizedBox(width: 18),
-                            itemBuilder: (context, i) {
-                              final cast = cState.casts[i];
-                              final url = cast.profileUrl != null
-                                  ? 'https://image.tmdb.org/t/p/w200${cast.profileUrl}'
-                                  : null;
-                              return Column(
-                                children: [
-                                  ClipRRect(
-                                    borderRadius: BorderRadius.circular(60),
-                                    child: url != null
-                                        ? Image.network(url, width: 100, height: 100, fit: BoxFit.cover)
-                                        : Container(
-                                      color: Colors.grey[800],
-                                      width: 80,
-                                      height: 80,
-                                      child: const Icon(Icons.person, size: 40, color: Colors.white30),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  SizedBox(
-                                    width: 100,
-                                    child: Text(cast.name, textAlign: TextAlign.center, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white70, fontSize: 12)),
-                                  ),
-                                  SizedBox(
-                                    width: 100,
-                                    child: Text("as ${cast.character}", textAlign: TextAlign.center, maxLines: 1, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white54, fontSize: 10)),
-                                  ),
-                                  const SizedBox(height: 6),
-                                  SizedBox(
-                                    width: 100,
-                                    child: Text(cast.castType, textAlign: TextAlign.center, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(color: Colors.white70, fontSize: 12)),
-                                  ),
-                                ],
-                              );
-                            },
-                          ),
-                        ),
-                      ],
-                    );
-                  },
-                ),
-                SizedBox(height: 24,),
-                BlocBuilder<TrailerBloc, TrailerState>(
-                  builder: (context, tState) {
-                    if (tState.isLoading) {
-                      return const Padding(
-                        padding: EdgeInsets.symmetric(vertical: 20),
-                        child: Center(
-                          child: CircularProgressIndicator(color: Colors.white),
-                        ),
-                      );
-                    }
-
-                    if (tState.key == null) {
-                      return const SizedBox.shrink();
-                    }
-
-                    _initYoutube(tState.key!);
-
-                    return Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          "Trailer",
-                          style: TextStyle(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-
-                        /// Wrap in a Card with shadow
-                        AnimatedOpacity(
-                          duration: const Duration(milliseconds: 500),
-                          opacity: 1.0,
-                          child: Card(
-                            elevation: 6,
-                            color: Colors.black,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
+                  SizedBox(height: 24),
+                  BlocBuilder<TrailerBloc, TrailerState>(
+                    builder: (context, tState) {
+                      if (tState.isLoading) {
+                        return const Padding(
+                          padding: EdgeInsets.symmetric(vertical: 20),
+                          child: Center(
+                            child: CircularProgressIndicator(
+                              color: Colors.white,
                             ),
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(8),
-                                child: YoutubePlayer(
-                                  controller: _ytController!,
-                                  showVideoProgressIndicator: true,
-                                  progressIndicatorColor: Colors.redAccent,
-                                  progressColors: const ProgressBarColors(
-                                    playedColor: Colors.redAccent,
-                                    handleColor: Colors.red,
+                          ),
+                        );
+                      }
+
+                      if (tState.key == null) {
+                        return const SizedBox.shrink();
+                      }
+
+                      _initYoutube(tState.key!);
+
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            "Trailer",
+                            style: TextStyle(
+                              fontSize: 22,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
+                          const SizedBox(height: 12),
+
+                          /// Wrap in a Card with shadow
+                          AnimatedOpacity(
+                            duration: const Duration(milliseconds: 500),
+                            opacity: 1.0,
+                            child: Card(
+                              elevation: 6,
+                              color: Colors.black,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Padding(
+                                padding: const EdgeInsets.all(8.0),
+                                child: ClipRRect(
+                                  borderRadius: BorderRadius.circular(8),
+                                  child: YoutubePlayer(
+                                    controller: _ytController!,
+                                    showVideoProgressIndicator: true,
+                                    progressIndicatorColor: Colors.redAccent,
+                                    progressColors: const ProgressBarColors(
+                                      playedColor: Colors.redAccent,
+                                      handleColor: Colors.red,
+                                    ),
                                   ),
                                 ),
                               ),
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 24),
-                      ],
-                    );
-                  },
-                ),
-              ],
+                          const SizedBox(height: 24),
+                        ],
+                      );
+                    },
+                  ),
+                ],
+              ),
             ),
           );
         },

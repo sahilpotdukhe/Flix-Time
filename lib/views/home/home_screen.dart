@@ -57,7 +57,8 @@ class HomeScreen extends StatelessWidget {
           Expanded(
             child: BlocBuilder<HomeBloc, HomeState>(
               builder: (context, state) {
-                final hasData = state.trendingMovies.isNotEmpty ||
+                final hasData =
+                    state.trendingMovies.isNotEmpty ||
                     state.nowPlayingMovies.isNotEmpty;
 
                 if (state.isLoading && !hasData) {
@@ -74,24 +75,20 @@ class HomeScreen extends StatelessWidget {
                         Text(
                           state.errorMessage ?? "No movies available.",
                           style: const TextStyle(
-                              color: Colors.white70, fontSize: 16),
+                            color: Colors.white70,
+                            fontSize: 16,
+                          ),
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 12),
                         ElevatedButton.icon(
                           onPressed: () {
-                            context
-                                .read<HomeBloc>()
-                                .add(FetchTrendingMovies());
-                            context
-                                .read<HomeBloc>()
-                                .add(FetchNowPlayingMovies());
-                            context
-                                .read<HomeBloc>()
-                                .add(FetchPopularMovies());
-                            context
-                                .read<HomeBloc>()
-                                .add(FetchTopRatedMovies());
+                            context.read<HomeBloc>().add(FetchTrendingMovies());
+                            context.read<HomeBloc>().add(
+                              FetchNowPlayingMovies(),
+                            );
+                            context.read<HomeBloc>().add(FetchPopularMovies());
+                            context.read<HomeBloc>().add(FetchTopRatedMovies());
                           },
                           icon: const Icon(Icons.refresh),
                           label: const Text("Retry"),
@@ -174,15 +171,10 @@ class HomeScreen extends StatelessWidget {
             builder: (context) {
               return GestureDetector(
                 onTap: () {
-                  // final movieRepository = context.read<MovieRepository>();
-
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => MovieDetailsScreen(
-                        movieId: movie.id,
-                        // movieRepository: movieRepository, // pass it directly
-                      ),
+                      builder: (_) => MovieDetailsScreen(movieId: movie.id),
                     ),
                   );
                 },
@@ -229,7 +221,7 @@ class HomeScreen extends StatelessWidget {
                   ),
                 ),
               );
-            }
+            },
           );
         },
       ),
