@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:tmdb_movies/data/repositories/movie_repository_impl.dart';
 import 'package:tmdb_movies/viewmodels/bookmarks/bookmarks_bloc.dart';
 import 'package:tmdb_movies/viewmodels/bookmarks/bookmarks_state.dart';
 import 'package:tmdb_movies/views/movie_details/movie_details_screen.dart';
@@ -48,10 +49,15 @@ class BookmarksScreen extends StatelessWidget {
 
               return GestureDetector(
                 onTap: () {
+                  // final movieRepository = context.read<MovieRepositoryImp>();
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => MovieDetailsScreen(movieId: movie.id),
+                      builder:
+                          (_) => MovieDetailsScreen(
+                            // movieRepository: movieRepository,
+                            movieId: movie.id,
+                          ),
                     ),
                   );
                 },

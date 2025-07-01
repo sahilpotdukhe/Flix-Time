@@ -6,6 +6,7 @@ import 'package:hive_flutter/adapters.dart';
 import 'package:tmdb_movies/data/api/tmdb_api.dart';
 import 'package:tmdb_movies/data/repositories/movie_repository.dart';
 import 'package:tmdb_movies/data/repositories/movie_repository_impl.dart';
+import 'package:tmdb_movies/models/cast_model.dart';
 import 'package:tmdb_movies/models/movie_model.dart';
 import 'package:tmdb_movies/viewmodels/bookmarks/bookmarks_bloc.dart';
 import 'package:tmdb_movies/viewmodels/bookmarks/bookmarks_event.dart';
@@ -19,11 +20,13 @@ void main() async {
 
   await Hive.initFlutter();
   Hive.registerAdapter(MovieModelAdapter());
+  // Hive.registerAdapter(CastModelAdapter());
 
   final trendingBox = await Hive.openBox<MovieModel>('trendingBox');
   final nowPlayingBox = await Hive.openBox<MovieModel>('nowPlayingBox');
   final popularBox = await Hive.openBox<MovieModel>('popularBox');
   final topRatedBox = await Hive.openBox<MovieModel>('topRatedBox');
+  // final castBox = await Hive.openBox<CastModel>('castsBox');
   final detailsBox = await Hive.openBox<MovieModel>('movieDetailsBox');
   final bookmarksBox = await Hive.openBox<MovieModel>('bookmarksBox');
 
@@ -41,6 +44,7 @@ void main() async {
     nowPlayingBox: nowPlayingBox,
     popularBox: popularBox,
     topRatedBox: topRatedBox,
+    // castsBox: castBox,
     movieDetailsBox: detailsBox,
     bookmarksBox: bookmarksBox,
     apiKey: apiKey
