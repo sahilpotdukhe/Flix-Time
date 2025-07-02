@@ -4,6 +4,8 @@ import 'package:tmdb_movies/models/movie_casts_response.dart';
 import 'package:tmdb_movies/models/movie_list_response.dart';
 import 'package:tmdb_movies/models/movie_model.dart';
 import 'package:tmdb_movies/models/movie_videos_response.dart';
+import 'package:tmdb_movies/models/tv_show_list_response.dart';
+import 'package:tmdb_movies/models/tv_show_model.dart';
 
 part 'tmdb_api.g.dart';
 
@@ -21,26 +23,20 @@ abstract class TMDBApi {
   Future<MovieListResponse> getNowPlayingMovies(
     @Query("api_key") String apiKey,
   );
-  
+
   @GET("movie/top_rated")
-  Future<MovieListResponse> getTopRatedMovies(
-      @Query("api_key") String apiKey,
-  );
+  Future<MovieListResponse> getTopRatedMovies(@Query("api_key") String apiKey);
 
   @GET("movie/popular")
-  Future<MovieListResponse> getPopularMovies(
-      @Query("api_key") String apiKey,
-);
+  Future<MovieListResponse> getPopularMovies(@Query("api_key") String apiKey);
 
   @GET("movie/upcoming")
-  Future<MovieListResponse> getUpcomingMovies(
-      @Query("api_key") String apiKey,
-);
+  Future<MovieListResponse> getUpcomingMovies(@Query("api_key") String apiKey);
 
   @GET("movie/{movie_id}/similar")
   Future<MovieListResponse> getSimilarMovies(
-      @Path("movie_id") int movieId,
-      @Query("api_key") String apiKey,
+    @Path("movie_id") int movieId,
+    @Query("api_key") String apiKey,
   );
 
   @GET("movie/{movie_id}")
@@ -51,10 +47,9 @@ abstract class TMDBApi {
 
   @GET("movie/{movie_id}/credits")
   Future<MovieCastsResponse> getMovieCast(
-      @Path("movie_id") int movieId,
-      @Query("api_key") String apiKey,
+    @Path("movie_id") int movieId,
+    @Query("api_key") String apiKey,
   );
-
 
   @GET("search/movie")
   Future<MovieListResponse> searchMovie(
@@ -64,9 +59,27 @@ abstract class TMDBApi {
 
   @GET('movie/{movie_id}/videos')
   Future<MovieVideosResponse> getMovieVideos(
-      @Path('movie_id') int id,
-      @Query('api_key') String apiKey,
-      @Query('language') String lang,
-      );
+    @Path('movie_id') int id,
+    @Query('api_key') String apiKey,
+    @Query('language') String lang,
+  );
 
+  @GET("trending/tv/day")
+  Future<TvShowListResponse> getTrendingTVShows(
+    @Query("api_key") String apiKey,
+  );
+
+  @GET("tv/popular")
+  Future<TvShowListResponse> getPopularTVShows(@Query("api_key") String apiKey);
+
+  @GET("tv/top_rated")
+  Future<TvShowListResponse> getTopRatedTVShows(
+    @Query("api_key") String apiKey,
+  );
+
+  @GET("tv/{tv_id}")
+  Future<TvShowModel> getTvShowDetails(
+    @Path("tv_id") int tvId,
+    @Query("api_key") String apiKey,
+  );
 }

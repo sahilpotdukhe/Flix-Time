@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tmdb_movies/viewmodels/home/home_bloc.dart';
 import 'package:tmdb_movies/viewmodels/home/home_state.dart';
-import 'package:tmdb_movies/views/home/home_screen.dart';
+import 'package:tmdb_movies/views/home/bottom_navigation_bar.dart';
 
 class SplashScreen extends StatelessWidget {
   const SplashScreen({super.key});

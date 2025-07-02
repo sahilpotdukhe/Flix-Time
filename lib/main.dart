@@ -6,12 +6,18 @@ import 'package:hive_flutter/adapters.dart';
 import 'package:tmdb_movies/data/api/tmdb_api.dart';
 import 'package:tmdb_movies/data/repositories/movie_repository.dart';
 import 'package:tmdb_movies/data/repositories/movie_repository_impl.dart';
+import 'package:tmdb_movies/data/repositories/tv_repository.dart';
+import 'package:tmdb_movies/data/repositories/tv_repository_impl.dart';
 import 'package:tmdb_movies/models/movie_model.dart';
 import 'package:tmdb_movies/viewmodels/bookmarks/bookmarks_bloc.dart';
 import 'package:tmdb_movies/viewmodels/bookmarks/bookmarks_event.dart';
 import 'package:tmdb_movies/viewmodels/home/home_bloc.dart';
 import 'package:tmdb_movies/viewmodels/home/home_events.dart';
+import 'package:tmdb_movies/viewmodels/tv_shows/tv_shows_bloc.dart';
+import 'package:tmdb_movies/viewmodels/tv_shows/tv_shows_event.dart';
 import 'package:tmdb_movies/views/splash/splash_screen.dart';
+
+import 'models/tv_show_model.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -19,8 +25,10 @@ void main() async {
 
   await Hive.initFlutter();
   Hive.registerAdapter(MovieModelAdapter());
+  Hive.registerAdapter(TvShowModelAdapter());
 
   final moviesBox = await Hive.openBox<MovieModel>('moviesBox');
+  final tvBox = await Hive.openBox<TvShowModel>('tvBox');
 
   final dio = Dio();
   final apiKey = dotenv.env['TMDB_API_KEY'];
@@ -36,12 +44,19 @@ void main() async {
     apiKey: apiKey
   );
 
-  runApp(MyApp(movieRepository: movieRepository));
+  final tvRepository = TvRepositoryImpl(
+    tmdbApi: tmdbApi,
+    tvBox: tvBox,
+    apiKey: apiKey,
+  );
+
+  runApp(MyApp(movieRepository: movieRepository,tvRepository: tvRepository,));
 }
 
 class MyApp extends StatelessWidget {
   final MovieRepository movieRepository;
-  const MyApp({super.key, required this.movieRepository});
+  final TvRepository tvRepository;
+  const MyApp({super.key, required this.movieRepository,required this.tvRepository});
 
   @override
   Widget build(BuildContext context) {
@@ -64,6 +79,12 @@ class MyApp extends StatelessWidget {
                 (_) =>
                     BookmarksBloc(movieRepository: movieRepository)
                       ..add(LoadBookmarks()),
+          ),
+          BlocProvider(
+            create: (_) => TvShowsBloc(tvRepository: tvRepository)
+              ..add(FetchTrendingTvShows())
+              ..add(FetchPopularTvShows())
+              ..add(FetchTopRatedTvShows()),
           ),
         ],
         child: MaterialApp(
