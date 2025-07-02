@@ -25,14 +25,14 @@ class HomeScreen extends StatelessWidget {
           style: TextStyle(
             fontWeight: FontWeight.bold,
             fontSize: 22,
-            color: Colors.white,
+            color: Colors.black,
           ),
         ),
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.amberAccent,
         elevation: 0,
         actions: [
           IconButton(
-            icon: const Icon(Icons.search, color: Colors.white),
+            icon: const Icon(Icons.search, color: Colors.black),
             onPressed: () {
               Navigator.push(
                 context,
@@ -41,7 +41,7 @@ class HomeScreen extends StatelessWidget {
             },
           ),
           IconButton(
-            icon: const Icon(Icons.bookmark, color: Colors.white),
+            icon: const Icon(Icons.bookmark, color: Colors.black),
             onPressed: () {
               Navigator.push(
                 context,
@@ -59,7 +59,10 @@ class HomeScreen extends StatelessWidget {
               builder: (context, state) {
                 final hasData =
                     state.trendingMovies.isNotEmpty ||
-                    state.nowPlayingMovies.isNotEmpty;
+                    state.upcomingMovies.isNotEmpty ||
+                    state.topRatedMovies.isNotEmpty ||
+                    state.popularMovies.isNotEmpty ||
+                    state.nowPlayingMovies.isNotEmpty ;
 
                 if (state.isLoading && !hasData) {
                   return const Center(
@@ -89,6 +92,7 @@ class HomeScreen extends StatelessWidget {
                             );
                             context.read<HomeBloc>().add(FetchPopularMovies());
                             context.read<HomeBloc>().add(FetchTopRatedMovies());
+                            context.read<HomeBloc>().add(FetchUpcomingMovies());
                           },
                           icon: const Icon(Icons.refresh),
                           label: const Text("Retry"),
@@ -104,6 +108,7 @@ class HomeScreen extends StatelessWidget {
                     context.read<HomeBloc>().add(FetchNowPlayingMovies());
                     context.read<HomeBloc>().add(FetchPopularMovies());
                     context.read<HomeBloc>().add(FetchTopRatedMovies());
+                    context.read<HomeBloc>().add(FetchUpcomingMovies());
                   },
                   child: SingleChildScrollView(
                     physics: const AlwaysScrollableScrollPhysics(),
@@ -116,13 +121,17 @@ class HomeScreen extends StatelessWidget {
                           _buildMovieList(state.trendingMovies),
                           const SizedBox(height: 20),
                         ],
-                        if (state.nowPlayingMovies.isNotEmpty) ...[
-                          _buildSectionTitle("Now Playing Movies"),
-                          _buildMovieList(state.nowPlayingMovies),
+                        if (state.upcomingMovies.isNotEmpty) ...[
+                          _buildSectionTitle("Upcoming Movies"),
+                          _buildMovieList(state.upcomingMovies),
                         ],
                         if (state.topRatedMovies.isNotEmpty) ...[
                           _buildSectionTitle("Top Rated Movies"),
                           _buildMovieList(state.topRatedMovies),
+                        ],
+                        if (state.nowPlayingMovies.isNotEmpty) ...[
+                          _buildSectionTitle("Now Playing Movies"),
+                          _buildMovieList(state.nowPlayingMovies),
                         ],
                         if (state.popularMovies.isNotEmpty) ...[
                           _buildSectionTitle("Popular Movies"),

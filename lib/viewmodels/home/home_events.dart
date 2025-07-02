@@ -12,3 +12,5 @@ class FetchNowPlayingMovies extends HomeEvent {}
 class FetchTopRatedMovies extends HomeEvent {}
 
 class FetchPopularMovies extends HomeEvent {}
+
+class FetchUpcomingMovies extends HomeEvent {}
