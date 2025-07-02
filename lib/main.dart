@@ -57,7 +57,8 @@ class MyApp extends StatelessWidget {
                       ..add(FetchTrendingMovies())
                       ..add(FetchNowPlayingMovies())
                       ..add(FetchPopularMovies())
-                      ..add(FetchTopRatedMovies()),
+                      ..add(FetchTopRatedMovies())
+                      ..add(FetchUpcomingMovies())
           ),
           BlocProvider(
             create:

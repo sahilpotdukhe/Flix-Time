@@ -6,6 +6,7 @@ class HomeState extends Equatable {
   final List<MovieModel> nowPlayingMovies;
   final List<MovieModel> popularMovies;
   final List<MovieModel> topRatedMovies;
+  final List<MovieModel> upcomingMovies;
   final bool isLoading;
   final String? errorMessage;
 
@@ -14,6 +15,7 @@ class HomeState extends Equatable {
     this.nowPlayingMovies = const [],
     this.topRatedMovies = const [],
     this.popularMovies = const [],
+    this.upcomingMovies = const [],
     this.isLoading = false,
     this.errorMessage,
   });
@@ -23,6 +25,7 @@ class HomeState extends Equatable {
     List<MovieModel>? nowPlayingMovies,
     List<MovieModel>? topRatedMovies,
     List<MovieModel>? popularMovies,
+    List<MovieModel>? upcomingMovies,
     bool? isLoading,
     String? errorMessage,
   }) {
@@ -31,6 +34,7 @@ class HomeState extends Equatable {
       nowPlayingMovies: nowPlayingMovies ?? this.nowPlayingMovies,
       popularMovies: popularMovies ?? this.popularMovies,
       topRatedMovies: topRatedMovies ?? this.topRatedMovies,
+      upcomingMovies: upcomingMovies ?? this.upcomingMovies,
       isLoading: isLoading ?? this.isLoading,
       errorMessage: errorMessage,
     );
@@ -42,6 +46,7 @@ class HomeState extends Equatable {
     nowPlayingMovies,
     popularMovies,
     topRatedMovies,
+    upcomingMovies,
     isLoading,
     errorMessage,
   ];

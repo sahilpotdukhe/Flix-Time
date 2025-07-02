@@ -117,6 +117,24 @@ class MovieRepositoryImp implements MovieRepository {
   }
 
   @override
+  Future<List<MovieModel>> getUpcomingMovies() async {
+    try {
+      if (!await _isConnected()) throw Exception("offline");
+      final response = await tmdbApi.getUpcomingMovies(apiKey);
+      final upcomingMovies = response.results;
+
+      await _clearCategory('upcoming');
+      for (final movie in upcomingMovies) {
+        await moviesBox.put(_createKey('upcoming', movie.id), movie);
+      }
+
+      return upcomingMovies;
+    } catch (e) {
+      return _getCachedByPrefix('upcoming');
+    }
+  }
+
+  @override
   Future<MovieModel> getMovieDetails(int movieId) async {
     final key = _createKey('details', movieId);
     final cached = moviesBox.get(key);

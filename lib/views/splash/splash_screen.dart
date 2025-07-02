@@ -1,44 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:tmdb_movies/data/repositories/movie_repository.dart';
 import 'package:tmdb_movies/viewmodels/home/home_bloc.dart';
-import 'package:tmdb_movies/viewmodels/home/home_events.dart';
+import 'package:tmdb_movies/viewmodels/home/home_state.dart';
 import 'package:tmdb_movies/views/home/home_screen.dart';
 
-class SplashScreen extends StatefulWidget {
+class SplashScreen extends StatelessWidget {
   const SplashScreen({super.key});
 
   @override
-  State<SplashScreen> createState() => _SplashScreenState();
-}
-
-class _SplashScreenState extends State<SplashScreen> {
-  late final MovieRepository repository;
-
-  @override
-  void initState() {
-    super.initState();
-    repository = RepositoryProvider.of<MovieRepository>(context);
-    _preloadData();
-  }
-
-  Future<void> _preloadData() async {
-    await repository.getTrendingMovies();
-    await repository.getNowPlayingMovies();
-
-    if (!mounted) return;
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (_) => const HomeScreen()),
-    );
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return const Scaffold(
+    return Scaffold(
       backgroundColor: Colors.black,
-      body: Center(
-        child: CircularProgressIndicator(color: Colors.redAccent),
+      body: BlocConsumer<HomeBloc, HomeState>(
+        listener: (context, state) {
+          final hasData = state.trendingMovies.isNotEmpty ||
+              state.nowPlayingMovies.isNotEmpty ||
+              state.popularMovies.isNotEmpty ||
+              state.topRatedMovies.isNotEmpty ||
+              state.upcomingMovies.isNotEmpty;
+
+          if (hasData) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (_) => const HomeScreen()),
+            );
+          }
+        },
+        builder: (context, state) {
+          return const Center(
+            child: CircularProgressIndicator(color: Colors.redAccent),
+          );
+        },
       ),
     );
   }

@@ -13,6 +13,7 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     on<FetchNowPlayingMovies>(_onFetchNowPlayingMovies);
     on<FetchPopularMovies>(_onFetchPopularMovies);
     on<FetchTopRatedMovies>(_onFetchTopRatedMovies);
+    on<FetchUpcomingMovies>(_onFetchUpcomingMovies);
   }
 
   Future<void> _onFetchTrendingMovies(
@@ -84,6 +85,24 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         state.copyWith(
           isLoading: false,
           errorMessage: "Failed to fetch top rated movies",
+        ),
+      );
+    }
+  }
+
+  Future<void> _onFetchUpcomingMovies(
+      FetchUpcomingMovies event,
+      Emitter<HomeState> emit,
+      ) async {
+    emit(state.copyWith(isLoading: true, errorMessage: null));
+    try {
+      final upcoming = await movieRepository.getUpcomingMovies();
+      emit(state.copyWith(isLoading: false, upcomingMovies: upcoming));
+    } catch (e) {
+      emit(
+        state.copyWith(
+          isLoading: false,
+          errorMessage: "Failed to fetch upcoming movies",
         ),
       );
     }
