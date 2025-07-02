@@ -37,6 +37,12 @@ abstract class TMDBApi {
       @Query("api_key") String apiKey,
 );
 
+  @GET("movie/{movie_id}/similar")
+  Future<MovieListResponse> getSimilarMovies(
+      @Path("movie_id") int movieId,
+      @Query("api_key") String apiKey,
+  );
+
   @GET("movie/{movie_id}")
   Future<MovieModel> getMovieDetails(
     @Path("movie_id") int movieId,

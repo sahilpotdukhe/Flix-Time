@@ -10,6 +10,7 @@ class MovieDetailsBloc extends Bloc<MovieDetailsEvent, MovieDetailsState> {
   MovieDetailsBloc({required this.movieRepository})
     : super(MovieDetailsState()) {
     on<FetchMovieDetails>(_onFetchMovieDetails);
+    on<FetchSimilarMovies>(_onFetchSimilarMovies);
   }
 
   Future<void> _onFetchMovieDetails(
@@ -24,5 +25,17 @@ class MovieDetailsBloc extends Bloc<MovieDetailsEvent, MovieDetailsState> {
     } catch (e) {
       emit(state.copyWith(isLoading: false, error: e.toString()));
     }
+  }
+
+  Future<void> _onFetchSimilarMovies(FetchSimilarMovies event,Emitter<MovieDetailsState> emit) async{
+    emit(state.copyWith(isLoading: true,error: null));
+    try{
+      final similarMovies = await movieRepository.getSimilarMovies(event.movieId);
+      print("error: $similarMovies");
+      emit(state.copyWith(isLoading: false,similarMovies: similarMovies));
+    }catch(e){
+      emit(state.copyWith(isLoading: false,error: e.toString()));
+    }
+
   }
 }

@@ -135,6 +135,19 @@ class MovieRepositoryImp implements MovieRepository {
   }
 
   @override
+  Future<List<MovieModel>> getSimilarMovies(int movieId) async {
+    try {
+      if (!await _isConnected()) throw Exception("offline");
+      final response = await tmdbApi.getSimilarMovies(movieId,apiKey);
+
+      final similarMovies = response.results;
+      return similarMovies;
+    } catch (e) {
+      return [];
+    }
+  }
+
+  @override
   Future<MovieModel> getMovieDetails(int movieId) async {
     final key = _createKey('details', movieId);
     final cached = moviesBox.get(key);
@@ -201,7 +214,7 @@ class MovieRepositoryImp implements MovieRepository {
 
       return null;
     } catch (e) {
-      print('Trailer fetch failed: $e');
+      log('Trailer fetch failed: $e');
       return null;
     }
   }

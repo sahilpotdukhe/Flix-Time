@@ -8,6 +8,7 @@ abstract class MovieRepository {
   Future<List<MovieModel>> getTopRatedMovies();
   Future<List<MovieModel>> getUpcomingMovies();
   Future<List<CastModel>> getMoviesCast(int movieId);
+  Future<List<MovieModel>> getSimilarMovies(int movieId);
   Future<List<MovieModel>> searchMovies(String query);
   Future<MovieModel> getMovieDetails(int movieId);
   Future<String?> getMovieTrailerKey(int movieId);

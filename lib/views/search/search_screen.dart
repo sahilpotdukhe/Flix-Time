@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:tmdb_movies/data/repositories/movie_repository_impl.dart';
 import 'package:tmdb_movies/models/movie_model.dart';
 import 'package:tmdb_movies/viewmodels/search/search_bloc.dart';
 import 'package:tmdb_movies/viewmodels/search/search_event.dart';
@@ -151,7 +150,7 @@ class _SearchView extends StatelessWidget {
                                   ),
                                   const SizedBox(height: 6),
                                   Text(
-                                    "📅 ${movie.releaseDate ?? 'N/A'}   ⭐ ${movie.voteAverage}",
+                                    "📅 ${movie.releaseDate}   ⭐ ${movie.voteAverage}",
                                     style: const TextStyle(
                                       color: Colors.amberAccent,
                                       fontSize: 13,
