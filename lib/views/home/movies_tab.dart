@@ -13,8 +13,8 @@ import 'package:tmdb_movies/views/search/search_screen.dart';
 import 'package:tmdb_movies/views/widgets/network_image_with_fallback.dart';
 import 'package:tmdb_movies/views/widgets/network_status_banner.dart';
 
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+class MoviesTab extends StatelessWidget {
+  const MoviesTab({super.key});
 
   @override
   Widget build(BuildContext context) {

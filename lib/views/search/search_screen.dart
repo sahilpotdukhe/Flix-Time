@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tmdb_movies/models/movie_model.dart';
+import 'package:tmdb_movies/viewmodels/casts/cast_bloc.dart';
+import 'package:tmdb_movies/viewmodels/movie_details/movie_details_bloc.dart';
 import 'package:tmdb_movies/viewmodels/search/search_bloc.dart';
 import 'package:tmdb_movies/viewmodels/search/search_event.dart';
 import 'package:tmdb_movies/viewmodels/search/search_state.dart';
+import 'package:tmdb_movies/viewmodels/trailer/trailer_bloc.dart' show TrailerBloc;
 import 'package:tmdb_movies/views/movie_details/movie_details_screen.dart';
 import 'package:tmdb_movies/views/widgets/network_image_with_fallback.dart';
 
@@ -106,16 +109,17 @@ class _SearchView extends StatelessWidget {
 
                     return GestureDetector(
                       onTap: () {
-                        // final movieRepository =
-                        //     context.read<MovieRepositoryImp>();
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder:
-                                (_) => MovieDetailsScreen(
-                                  // movieRepository: movieRepository,
-                                  movieId: movie.id,
-                                ),
+                            builder: (_) => MultiBlocProvider(
+                              providers: [
+                                BlocProvider(create: (_) => MovieDetailsBloc(movieRepository: context.read())),
+                                BlocProvider(create: (_) => CastBloc(movieRepository: context.read())),
+                                BlocProvider(create: (_) => TrailerBloc(context.read())),
+                              ],
+                              child: MovieDetailsScreen(movieId: movie.id),
+                            ),
                           ),
                         );
                       },
