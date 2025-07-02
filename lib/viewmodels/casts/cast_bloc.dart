@@ -1,6 +1,5 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:tmdb_movies/data/repositories/movie_repository.dart';
-import 'package:tmdb_movies/data/repositories/movie_repository_impl.dart';
 import 'package:tmdb_movies/viewmodels/casts/cast_event.dart';
 import 'package:tmdb_movies/viewmodels/casts/cast_state.dart';
 

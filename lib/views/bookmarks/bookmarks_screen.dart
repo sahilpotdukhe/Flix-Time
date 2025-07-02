@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:tmdb_movies/data/repositories/movie_repository_impl.dart';
 import 'package:tmdb_movies/viewmodels/bookmarks/bookmarks_bloc.dart';
 import 'package:tmdb_movies/viewmodels/bookmarks/bookmarks_state.dart';
 import 'package:tmdb_movies/views/movie_details/movie_details_screen.dart';
@@ -92,7 +91,7 @@ class BookmarksScreen extends StatelessWidget {
                             ),
                             const SizedBox(height: 4),
                             Text(
-                              "⭐ ${movie.voteAverage}   |   📅 ${movie.releaseDate ?? 'N/A'}",
+                              "⭐ ${movie.voteAverage}   |   📅 ${movie.releaseDate}",
                               style: const TextStyle(
                                 fontSize: 13,
                                 color: Colors.amberAccent,

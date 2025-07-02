@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:tmdb_movies/viewmodels/casts/cast_bloc.dart';
-import 'package:tmdb_movies/viewmodels/casts/cast_event.dart';
-import 'package:tmdb_movies/viewmodels/casts/cast_state.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
-import 'package:tmdb_movies/models/movie_model.dart';
 import 'package:tmdb_movies/viewmodels/bookmarks/bookmarks_bloc.dart';
 import 'package:tmdb_movies/viewmodels/bookmarks/bookmarks_event.dart';
 import 'package:tmdb_movies/viewmodels/bookmarks/bookmarks_state.dart';
+import 'package:tmdb_movies/viewmodels/casts/cast_bloc.dart';
+import 'package:tmdb_movies/viewmodels/casts/cast_event.dart';
+import 'package:tmdb_movies/viewmodels/casts/cast_state.dart';
 import 'package:tmdb_movies/viewmodels/movie_details/movie_details_bloc.dart';
 import 'package:tmdb_movies/viewmodels/movie_details/movie_details_event.dart';
 import 'package:tmdb_movies/viewmodels/movie_details/movie_details_state.dart';
@@ -16,56 +15,29 @@ import 'package:tmdb_movies/viewmodels/trailer/trailer_event.dart';
 import 'package:tmdb_movies/viewmodels/trailer/trailer_state.dart';
 import 'package:tmdb_movies/views/widgets/network_image_with_fallback.dart';
 
-class MovieDetailsScreen extends StatelessWidget {
+class MovieDetailsScreen extends StatefulWidget {
   final int movieId;
-
   const MovieDetailsScreen({super.key, required this.movieId});
 
   @override
-  Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider<MovieDetailsBloc>(
-          create:
-              (_) =>
-                  MovieDetailsBloc(movieRepository: context.read())
-                    ..add(FetchMovieDetails(movieId: movieId)),
-        ),
-        BlocProvider<TrailerBloc>(
-          create:
-              (_) => TrailerBloc(context.read())..add(FetchTrailer(movieId)),
-        ),
-        BlocProvider<CastBloc>(
-          create:
-              (_) =>
-                  CastBloc(movieRepository: context.read())
-                    ..add(FetchCast(movieId)),
-        ),
-      ],
-      child: _MovieDetailsView(movieId: movieId,),
-    );
-  }
+  State<MovieDetailsScreen> createState() => _MovieDetailsScreenState();
 }
 
-class _MovieDetailsView extends StatefulWidget {
-  final int movieId;
-
-  const _MovieDetailsView({super.key, required this.movieId});
-  @override
-  State<_MovieDetailsView> createState() => _MovieDetailsViewState();
-}
-
-class _MovieDetailsViewState extends State<_MovieDetailsView> {
+class _MovieDetailsScreenState extends State<MovieDetailsScreen> {
   YoutubePlayerController? _ytController;
 
   @override
-  void dispose() {
-    _ytController?.dispose();
-    super.dispose();
+  void initState() {
+    super.initState();
+    context.read<MovieDetailsBloc>().add(FetchMovieDetails(movieId: widget.movieId));
+    context.read<MovieDetailsBloc>().add(FetchSimilarMovies(movieId: widget.movieId));
+    context.read<CastBloc>().add(FetchCast(widget.movieId));
+    context.read<TrailerBloc>().add(FetchTrailer(widget.movieId));
   }
 
   void _initYoutube(String key) {
     if (_ytController == null || _ytController!.initialVideoId != key) {
+      _ytController?.dispose(); // dispose old one
       _ytController = YoutubePlayerController(
         initialVideoId: key,
         flags: const YoutubePlayerFlags(autoPlay: false),
@@ -74,136 +46,184 @@ class _MovieDetailsViewState extends State<_MovieDetailsView> {
   }
 
   @override
+  void dispose() {
+    _ytController?.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: const Color(0xFF0E0E0E),
       appBar: AppBar(
-        backgroundColor: Colors.black87,
+        title: const Text('Movie Details'),
+        backgroundColor: Colors.black,
         elevation: 0,
         centerTitle: true,
-        title: const Text(
-          'Movie Details',
-          style: TextStyle(color: Colors.white),
-        ),
         iconTheme: const IconThemeData(color: Colors.white),
       ),
       body: BlocBuilder<MovieDetailsBloc, MovieDetailsState>(
         builder: (context, state) {
-          if (state.isLoading) {
-            return const Center(
-              child: CircularProgressIndicator(color: Colors.redAccent),
-            );
-          }
-
           final movie = state.movie;
+          final similarMovies = state.similarMovies;
 
-          if (movie == null) {
-            return const Center(
-              child: Text(
-                "Movie not found",
-                style: TextStyle(color: Colors.white),
-              ),
-            );
+          if (state.isLoading && movie == null) {
+            return const Center(child: CircularProgressIndicator(color: Colors.redAccent));
           }
 
           if (state.error != null) {
-            return RefreshIndicator(
-              onRefresh: () async {
-                context.read<MovieDetailsBloc>().add(FetchMovieDetails(movieId: widget.movieId));
-                context.read<TrailerBloc>().add(FetchTrailer(widget.movieId));
-                context.read<CastBloc>().add(FetchCast(widget.movieId));
-              },
-              child: ListView(
-                physics: const AlwaysScrollableScrollPhysics(),
-                children: [
-                  SizedBox(
-                    height: MediaQuery.of(context).size.height * 0.7,
-                    child: Center(
-                      child: Text(
-                        "Error: ${state.error!}\nPull down to retry.",
-                        textAlign: TextAlign.center,
-                        style: const TextStyle(color: Colors.white, fontSize: 16),
-                      ),
-                    ),
-                  )
-                ],
-              ),
-            );
+            return Center(child: Text(state.error!, style: const TextStyle(color: Colors.white)));
           }
 
-
-
-          final posterUrl =
-              'https://image.tmdb.org/t/p/w500${movie.posterPath}';
+          if (movie == null) return const SizedBox();
 
           return RefreshIndicator(
-            color: Colors.redAccent,
             onRefresh: () async {
-              context.read<MovieDetailsBloc>().add(
-                FetchMovieDetails(movieId: widget.movieId),
-              );
-              context.read<TrailerBloc>().add(FetchTrailer(widget.movieId));
+              context.read<MovieDetailsBloc>().add(FetchMovieDetails(movieId: widget.movieId));
+              context.read<MovieDetailsBloc>().add(FetchSimilarMovies(movieId: widget.movieId));
               context.read<CastBloc>().add(FetchCast(widget.movieId));
+              context.read<TrailerBloc>().add(FetchTrailer(widget.movieId));
             },
-            child: SingleChildScrollView(
-              physics: const AlwaysScrollableScrollPhysics(),
+            child: ListView(
               padding: const EdgeInsets.all(16),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Center(
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(16),
-                      child: NetworkImageWithFallback(
-                        imageUrl: posterUrl,
-                        height: 350,
-                        width: 240,
-                      ),
+              children: [
+                Center(
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(16),
+                    child: NetworkImageWithFallback(
+                      imageUrl: 'https://image.tmdb.org/t/p/w500${movie.posterPath}',
+                      height: 350,
+                      width: 240,
                     ),
                   ),
-                  const SizedBox(height: 16),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  movie.title,
+                  style: const TextStyle(fontSize: 22, color: Colors.white, fontWeight: FontWeight.bold),
+                ),
+                const SizedBox(height: 10),
+                Text("Release: ${movie.releaseDate}", style: const TextStyle(color: Colors.white70)),
+                const SizedBox(height: 6),
+                Text("Rating: ${movie.voteAverage.toStringAsFixed(1)}/10", style: const TextStyle(color: Colors.amberAccent)),
 
-                  Center(
-                    child: BlocBuilder<BookmarksBloc, BookmarksState>(
-                      builder: (context, bState) {
-                        final isBookmarked = bState.bookmarks.any(
-                          (m) => m.id == widget.movieId,
-                        );
+                if (movie.tagline != null && movie.tagline!.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  Text("Tagline: ${movie.tagline}", style: const TextStyle(color: Colors.amberAccent)),
+                ],
+
+                const SizedBox(height: 24),
+                const Text("Overview", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white)),
+                const SizedBox(height: 8),
+                Text(movie.overview, style: const TextStyle(color: Colors.white70)),
+
+                const SizedBox(height: 24),
+                BlocBuilder<CastBloc, CastState>(
+                  builder: (context, castState) {
+                    if (castState.casts.isEmpty) return const SizedBox();
+
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text("Cast", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                        const SizedBox(height: 12),
+                        SizedBox(
+                          height: 180,
+                          child: ListView.builder(
+                            scrollDirection: Axis.horizontal,
+                            itemCount: castState.casts.length,
+                            itemBuilder: (context, index) {
+                              final cast = castState.casts[index];
+                              return Padding(
+                                padding: const EdgeInsets.only(right: 12),
+                                child: Column(
+                                  children: [
+                                    ClipRRect(
+                                      borderRadius: BorderRadius.circular(50),
+                                      child: Image.network(
+                                        'https://image.tmdb.org/t/p/w200${cast.profileUrl}',
+                                        width: 80,
+                                        height: 80,
+                                        fit: BoxFit.cover,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 4),
+                                    SizedBox(
+                                      width: 80,
+                                      child: Text(
+                                        cast.name,
+                                        textAlign: TextAlign.center,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: const TextStyle(color: Colors.white70, fontSize: 12),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+
+                const SizedBox(height: 24),
+                BlocBuilder<TrailerBloc, TrailerState>(
+                  builder: (context, trailerState) {
+
+                    if (trailerState.key != null) {
+                      _initYoutube(trailerState.key!);
+                      return Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text("Trailer", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                          const SizedBox(height: 12),
+                          YoutubePlayer(controller: _ytController!),
+                        ],
+                      );
+                    }
+
+                    return const SizedBox();
+                  },
+                ),
+
+                const SizedBox(height: 24),
+                if (similarMovies.isNotEmpty) ...[
+                  const Text("Similar Movies", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                  const SizedBox(height: 12),
+                  SizedBox(
+                    height: 250,
+                    child: ListView.builder(
+                      scrollDirection: Axis.horizontal,
+                      itemCount: similarMovies.length,
+                      itemBuilder: (context, index) {
+                        final movie = similarMovies[index];
                         return GestureDetector(
                           onTap: () {
-                            context.read<BookmarksBloc>().add(
-                              ToggleBookmark(movie),
+                            Navigator.pushReplacement(
+                              context,
+                              MaterialPageRoute(builder: (_) => MovieDetailsScreen(movieId: movie.id)),
                             );
                           },
                           child: Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16,
-                              vertical: 8,
-                            ),
-                            decoration: BoxDecoration(
-                              color: Colors.black,
-                              borderRadius: BorderRadius.circular(30),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.3),
-                                  blurRadius: 6,
-                                ),
-                              ],
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
+                            width: 140,
+                            margin: const EdgeInsets.only(right: 12),
+                            child: Column(
                               children: [
-                                Icon(
-                                  isBookmarked
-                                      ? Icons.bookmark
-                                      : Icons.bookmark_border,
-                                  color: Colors.amber,
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(12),
+                                  child: NetworkImageWithFallback(
+                                    imageUrl: 'https://image.tmdb.org/t/p/w500${movie.posterPath}',
+                                    height: 180,
+                                    width: 140,
+                                  ),
                                 ),
-                                const SizedBox(width: 8),
+                                const SizedBox(height: 6),
                                 Text(
-                                  isBookmarked
-                                      ? "Bookmarked"
-                                      : "Add to Bookmarks",
+                                  movie.title,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
                                   style: const TextStyle(color: Colors.white),
                                 ),
                               ],
@@ -213,263 +233,8 @@ class _MovieDetailsViewState extends State<_MovieDetailsView> {
                       },
                     ),
                   ),
-                  const SizedBox(height: 24),
-
-                  Text(
-                    movie.title,
-                    style: const TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.w700,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.calendar_today_rounded,
-                        size: 18,
-                        color: Colors.white70,
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        "Release Date: ${movie.releaseDate}" ?? 'Unknown',
-                        style: const TextStyle(color: Colors.white70),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    children: [
-                      const Icon(
-                        Icons.star,
-                        color: Colors.amberAccent,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 6),
-                      Text(
-                        "Rating: ${movie.voteAverage.toStringAsFixed(2)}/10",
-                        style: const TextStyle(color: Colors.amberAccent),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  (movie.tagline != null && movie.tagline!.isNotEmpty)
-                      ? Row(
-                        children: [
-                          const Icon(
-                            Icons.tag,
-                            color: Colors.amberAccent,
-                            size: 20,
-                          ),
-                          const SizedBox(width: 6),
-                          Expanded(
-                            child: Text(
-                              "Tagline: ${movie.tagline}",
-                              style: const TextStyle(color: Colors.amberAccent),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
-                      )
-                      : SizedBox.shrink(),
-
-                  const SizedBox(height: 24),
-
-                  const Text(
-                    "Overview",
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Text(
-                    movie.overview.isNotEmpty
-                        ? movie.overview
-                        : 'No description available.',
-                    style: const TextStyle(
-                      fontSize: 15,
-                      height: 1.5,
-                      color: Colors.white70,
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  BlocBuilder<CastBloc, CastState>(
-                    builder: (context, cState) {
-                      if (cState.isLoading) {
-                        return const Center(child: CircularProgressIndicator());
-                      }
-                      if (cState.casts.isEmpty) return const SizedBox();
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const SizedBox(height: 24),
-                          const Text(
-                            "Cast",
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-                          SizedBox(
-                            height: 200,
-                            child: ListView.separated(
-                              scrollDirection: Axis.horizontal,
-                              itemCount: cState.casts.length,
-                              separatorBuilder:
-                                  (_, __) => const SizedBox(width: 18),
-                              itemBuilder: (context, i) {
-                                final cast = cState.casts[i];
-                                final url =
-                                    cast.profileUrl != null
-                                        ? 'https://image.tmdb.org/t/p/w200${cast.profileUrl}'
-                                        : null;
-                                return Column(
-                                  children: [
-                                    ClipRRect(
-                                      borderRadius: BorderRadius.circular(60),
-                                      child:
-                                          url != null
-                                              ? Image.network(
-                                                url,
-                                                width: 100,
-                                                height: 100,
-                                                fit: BoxFit.cover,
-                                              )
-                                              : Container(
-                                                color: Colors.grey[800],
-                                                width: 80,
-                                                height: 80,
-                                                child: const Icon(
-                                                  Icons.person,
-                                                  size: 40,
-                                                  color: Colors.white30,
-                                                ),
-                                              ),
-                                    ),
-                                    const SizedBox(height: 6),
-                                    SizedBox(
-                                      width: 100,
-                                      child: Text(
-                                        cast.name,
-                                        textAlign: TextAlign.center,
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(
-                                          color: Colors.white70,
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                    ),
-                                    SizedBox(
-                                      width: 100,
-                                      child: Text(
-                                        "as ${cast.character}",
-                                        textAlign: TextAlign.center,
-                                        maxLines: 1,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(
-                                          color: Colors.white54,
-                                          fontSize: 10,
-                                        ),
-                                      ),
-                                    ),
-                                    const SizedBox(height: 6),
-                                    SizedBox(
-                                      width: 100,
-                                      child: Text(
-                                        cast.castType,
-                                        textAlign: TextAlign.center,
-                                        maxLines: 2,
-                                        overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(
-                                          color: Colors.white70,
-                                          fontSize: 12,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                );
-                              },
-                            ),
-                          ),
-                        ],
-                      );
-                    },
-                  ),
-                  SizedBox(height: 24),
-                  BlocBuilder<TrailerBloc, TrailerState>(
-                    builder: (context, tState) {
-                      if (tState.isLoading) {
-                        return const Padding(
-                          padding: EdgeInsets.symmetric(vertical: 20),
-                          child: Center(
-                            child: CircularProgressIndicator(
-                              color: Colors.white,
-                            ),
-                          ),
-                        );
-                      }
-
-                      if (tState.key == null) {
-                        return const SizedBox.shrink();
-                      }
-
-                      _initYoutube(tState.key!);
-
-                      return Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          const Text(
-                            "Trailer",
-                            style: TextStyle(
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                          const SizedBox(height: 12),
-
-                          /// Wrap in a Card with shadow
-                          AnimatedOpacity(
-                            duration: const Duration(milliseconds: 500),
-                            opacity: 1.0,
-                            child: Card(
-                              elevation: 6,
-                              color: Colors.black,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Padding(
-                                padding: const EdgeInsets.all(8.0),
-                                child: ClipRRect(
-                                  borderRadius: BorderRadius.circular(8),
-                                  child: YoutubePlayer(
-                                    controller: _ytController!,
-                                    showVideoProgressIndicator: true,
-                                    progressIndicatorColor: Colors.redAccent,
-                                    progressColors: const ProgressBarColors(
-                                      playedColor: Colors.redAccent,
-                                      handleColor: Colors.red,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(height: 24),
-                        ],
-                      );
-                    },
-                  ),
-                ],
-              ),
+                ]
+              ],
             ),
           );
         },

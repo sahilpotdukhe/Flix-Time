@@ -5,3 +5,9 @@ class FetchMovieDetails extends MovieDetailsEvent {
 
   FetchMovieDetails({required this.movieId});
 }
+
+class FetchSimilarMovies extends MovieDetailsEvent {
+  final int movieId;
+
+  FetchSimilarMovies({required this.movieId});
+}

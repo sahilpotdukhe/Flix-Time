@@ -1,11 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:tmdb_movies/data/repositories/movie_repository.dart';
-import 'package:tmdb_movies/data/repositories/movie_repository_impl.dart';
 import 'package:tmdb_movies/models/movie_model.dart';
+import 'package:tmdb_movies/viewmodels/casts/cast_bloc.dart';
 import 'package:tmdb_movies/viewmodels/home/home_bloc.dart';
 import 'package:tmdb_movies/viewmodels/home/home_events.dart';
 import 'package:tmdb_movies/viewmodels/home/home_state.dart';
+import 'package:tmdb_movies/viewmodels/movie_details/movie_details_bloc.dart';
+import 'package:tmdb_movies/viewmodels/trailer/trailer_bloc.dart';
 import 'package:tmdb_movies/views/bookmarks/bookmarks_screen.dart';
 import 'package:tmdb_movies/views/movie_details/movie_details_screen.dart';
 import 'package:tmdb_movies/views/search/search_screen.dart';
@@ -62,7 +63,7 @@ class HomeScreen extends StatelessWidget {
                     state.upcomingMovies.isNotEmpty ||
                     state.topRatedMovies.isNotEmpty ||
                     state.popularMovies.isNotEmpty ||
-                    state.nowPlayingMovies.isNotEmpty ;
+                    state.nowPlayingMovies.isNotEmpty;
 
                 if (state.isLoading && !hasData) {
                   return const Center(
@@ -87,9 +88,7 @@ class HomeScreen extends StatelessWidget {
                         ElevatedButton.icon(
                           onPressed: () {
                             context.read<HomeBloc>().add(FetchTrendingMovies());
-                            context.read<HomeBloc>().add(
-                              FetchNowPlayingMovies(),
-                            );
+                            context.read<HomeBloc>().add(FetchNowPlayingMovies());
                             context.read<HomeBloc>().add(FetchPopularMovies());
                             context.read<HomeBloc>().add(FetchTopRatedMovies());
                             context.read<HomeBloc>().add(FetchUpcomingMovies());
@@ -183,9 +182,17 @@ class HomeScreen extends StatelessWidget {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (_) => MovieDetailsScreen(movieId: movie.id),
+                      builder: (_) => MultiBlocProvider(
+                        providers: [
+                          BlocProvider(create: (_) => MovieDetailsBloc(movieRepository: context.read())),
+                          BlocProvider(create: (_) => CastBloc(movieRepository: context.read())),
+                          BlocProvider(create: (_) => TrailerBloc(context.read())),
+                        ],
+                        child: MovieDetailsScreen(movieId: movie.id),
+                      ),
                     ),
                   );
+
                 },
                 child: Container(
                   width: 140,
