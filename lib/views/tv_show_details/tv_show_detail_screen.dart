@@ -7,6 +7,7 @@ import 'package:tmdb_movies/viewmodels/tv_shows/tv_shows_bloc.dart';
 import 'package:tmdb_movies/viewmodels/tv_shows/tv_shows_event.dart';
 import 'package:tmdb_movies/viewmodels/tv_shows/tv_shows_state.dart';
 import 'package:tmdb_movies/views/widgets/network_image_with_fallback.dart';
+import 'package:tmdb_movies/views/widgets/quiet_state_box.dart';
 
 class TvShowDetailsScreen extends StatefulWidget {
   final int tvShowId;
@@ -21,7 +22,7 @@ class _TvShowDetailsScreenState extends State<TvShowDetailsScreen> {
   @override
   void initState() {
     super.initState();
-    context.read<TvShowsBloc>().add(FetchTvShowDetails( tvId: widget.tvShowId));
+    context.read<TvShowsBloc>().add(FetchTvShowDetails(tvId: widget.tvShowId));
   }
 
   @override
@@ -40,20 +41,20 @@ class _TvShowDetailsScreenState extends State<TvShowDetailsScreen> {
           }
 
           if (state.error != null) {
-            return Center(
-              child: Text(
-                state.error!,
-                style: const TextStyle(color: Colors.white70),
-              ),
+            return QuietStateBox(
+              title: 'Movie details not fetched',
+              subtitle:
+                  'Please Refresh or revisit to load with movies details.\n ${state.error}',
             );
           }
 
           final tvShow = state.tvShowDetails;
           if (tvShow == null) {
             return const Center(
-              child: Text(
-                "No details available",
-                style: TextStyle(color: Colors.white70),
+              child: QuietStateBox(
+                title: 'TV Show details not fetched',
+                subtitle:
+                    'Please Refresh or revisit to load with Tv show details',
               ),
             );
           }
@@ -67,7 +68,8 @@ class _TvShowDetailsScreenState extends State<TvShowDetailsScreen> {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(12),
                     child: NetworkImageWithFallback(
-                      imageUrl: 'https://image.tmdb.org/t/p/w500${tvShow.posterPath}',
+                      imageUrl:
+                          'https://image.tmdb.org/t/p/w500${tvShow.posterPath}',
                       height: 300,
                       width: 200,
                     ),
@@ -77,7 +79,7 @@ class _TvShowDetailsScreenState extends State<TvShowDetailsScreen> {
                   child: BlocBuilder<BookmarksBloc, BookmarksState>(
                     builder: (context, state) {
                       final isBookmarked = state.tvShowBookmarks.any(
-                            (tv) => tv.id == tvShow.id,
+                        (tv) => tv.id == tvShow.id,
                       );
 
                       return GestureDetector(

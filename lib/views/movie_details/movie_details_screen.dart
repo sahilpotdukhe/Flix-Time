@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:tmdb_movies/views/widgets/quiet_state_box.dart';
 import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import 'package:tmdb_movies/viewmodels/bookmarks/bookmarks_bloc.dart';
 import 'package:tmdb_movies/viewmodels/bookmarks/bookmarks_event.dart';
@@ -17,6 +18,7 @@ import 'package:tmdb_movies/views/widgets/network_image_with_fallback.dart';
 
 class MovieDetailsScreen extends StatefulWidget {
   final int movieId;
+
   const MovieDetailsScreen({super.key, required this.movieId});
 
   @override
@@ -29,8 +31,12 @@ class _MovieDetailsScreenState extends State<MovieDetailsScreen> {
   @override
   void initState() {
     super.initState();
-    context.read<MovieDetailsBloc>().add(FetchMovieDetails(movieId: widget.movieId));
-    context.read<MovieDetailsBloc>().add(FetchSimilarMovies(movieId: widget.movieId));
+    context.read<MovieDetailsBloc>().add(
+      FetchMovieDetails(movieId: widget.movieId),
+    );
+    context.read<MovieDetailsBloc>().add(
+      FetchSimilarMovies(movieId: widget.movieId),
+    );
     context.read<CastBloc>().add(FetchCast(widget.movieId));
     context.read<TrailerBloc>().add(FetchTrailer(widget.movieId));
   }
@@ -68,19 +74,33 @@ class _MovieDetailsScreenState extends State<MovieDetailsScreen> {
           final similarMovies = state.similarMovies;
 
           if (state.isLoading && movie == null) {
-            return const Center(child: CircularProgressIndicator(color: Colors.redAccent));
+            return const Center(
+              child: CircularProgressIndicator(color: Colors.redAccent),
+            );
           }
 
           if (state.error != null) {
-            return Center(child: Text(state.error!, style: const TextStyle(color: Colors.white)));
+            return QuietStateBox(
+              title: 'Movie details not fetched',
+              subtitle:
+                  'Please Refresh or revisit to load with movies details.\n ${state.error}',
+            );
           }
 
-          if (movie == null) return const SizedBox();
+          if (movie == null)
+            return QuietStateBox(
+              title: 'Movie details not fetched',
+              subtitle: 'Please Refresh or revisit to load with movies details',
+            );
 
           return RefreshIndicator(
             onRefresh: () async {
-              context.read<MovieDetailsBloc>().add(FetchMovieDetails(movieId: widget.movieId));
-              context.read<MovieDetailsBloc>().add(FetchSimilarMovies(movieId: widget.movieId));
+              context.read<MovieDetailsBloc>().add(
+                FetchMovieDetails(movieId: widget.movieId),
+              );
+              context.read<MovieDetailsBloc>().add(
+                FetchSimilarMovies(movieId: widget.movieId),
+              );
               context.read<CastBloc>().add(FetchCast(widget.movieId));
               context.read<TrailerBloc>().add(FetchTrailer(widget.movieId));
             },
@@ -91,7 +111,8 @@ class _MovieDetailsScreenState extends State<MovieDetailsScreen> {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(16),
                     child: NetworkImageWithFallback(
-                      imageUrl: 'https://image.tmdb.org/t/p/w500${movie.posterPath}',
+                      imageUrl:
+                          'https://image.tmdb.org/t/p/w500${movie.posterPath}',
                       height: 350,
                       width: 240,
                     ),
@@ -102,7 +123,7 @@ class _MovieDetailsScreenState extends State<MovieDetailsScreen> {
                   child: BlocBuilder<BookmarksBloc, BookmarksState>(
                     builder: (context, state) {
                       final isBookmarked = state.movieBookmarks.any(
-                            (m) => m.id == movie.id,
+                        (m) => m.id == movie.id,
                       );
 
                       return GestureDetector(
@@ -154,22 +175,45 @@ class _MovieDetailsScreenState extends State<MovieDetailsScreen> {
                 const SizedBox(height: 16),
                 Text(
                   movie.title,
-                  style: const TextStyle(fontSize: 22, color: Colors.white, fontWeight: FontWeight.bold),
+                  style: const TextStyle(
+                    fontSize: 22,
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
                 const SizedBox(height: 10),
-                Text("Release: ${movie.releaseDate}", style: const TextStyle(color: Colors.white70)),
+                Text(
+                  "Release: ${movie.releaseDate}",
+                  style: const TextStyle(color: Colors.white70),
+                ),
                 const SizedBox(height: 6),
-                Text("Rating: ${movie.voteAverage.toStringAsFixed(1)}/10", style: const TextStyle(color: Colors.amberAccent)),
+                Text(
+                  "Rating: ${movie.voteAverage.toStringAsFixed(1)}/10",
+                  style: const TextStyle(color: Colors.amberAccent),
+                ),
 
                 if (movie.tagline != null && movie.tagline!.isNotEmpty) ...[
                   const SizedBox(height: 8),
-                  Text("Tagline: ${movie.tagline}", style: const TextStyle(color: Colors.amberAccent)),
+                  Text(
+                    "Tagline: ${movie.tagline}",
+                    style: const TextStyle(color: Colors.amberAccent),
+                  ),
                 ],
 
                 const SizedBox(height: 24),
-                const Text("Overview", style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600, color: Colors.white)),
+                const Text(
+                  "Overview",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.w600,
+                    color: Colors.white,
+                  ),
+                ),
                 const SizedBox(height: 8),
-                Text(movie.overview, style: const TextStyle(color: Colors.white70)),
+                Text(
+                  movie.overview,
+                  style: const TextStyle(color: Colors.white70),
+                ),
 
                 const SizedBox(height: 24),
                 BlocBuilder<CastBloc, CastState>(
@@ -179,7 +223,14 @@ class _MovieDetailsScreenState extends State<MovieDetailsScreen> {
                     return Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        const Text("Cast", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                        const Text(
+                          "Cast",
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
                         const SizedBox(height: 12),
                         SizedBox(
                           height: 180,
@@ -208,7 +259,10 @@ class _MovieDetailsScreenState extends State<MovieDetailsScreen> {
                                         cast.name,
                                         textAlign: TextAlign.center,
                                         overflow: TextOverflow.ellipsis,
-                                        style: const TextStyle(color: Colors.white70, fontSize: 12),
+                                        style: const TextStyle(
+                                          color: Colors.white70,
+                                          fontSize: 12,
+                                        ),
                                       ),
                                     ),
                                   ],
@@ -225,13 +279,19 @@ class _MovieDetailsScreenState extends State<MovieDetailsScreen> {
                 const SizedBox(height: 24),
                 BlocBuilder<TrailerBloc, TrailerState>(
                   builder: (context, trailerState) {
-
                     if (trailerState.key != null) {
                       _initYoutube(trailerState.key!);
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          const Text("Trailer", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                          const Text(
+                            "Trailer",
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                            ),
+                          ),
                           const SizedBox(height: 12),
                           YoutubePlayer(controller: _ytController!),
                         ],
@@ -244,7 +304,14 @@ class _MovieDetailsScreenState extends State<MovieDetailsScreen> {
 
                 const SizedBox(height: 24),
                 if (similarMovies.isNotEmpty) ...[
-                  const Text("Similar Movies", style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                  const Text(
+                    "Similar Movies",
+                    style: TextStyle(
+                      fontSize: 18,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
                   const SizedBox(height: 12),
                   SizedBox(
                     height: 250,
@@ -258,14 +325,31 @@ class _MovieDetailsScreenState extends State<MovieDetailsScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (_) => MultiBlocProvider(
-                                  providers: [
-                                    BlocProvider(create: (_) => MovieDetailsBloc(movieRepository: context.read())),
-                                    BlocProvider(create: (_) => CastBloc(movieRepository: context.read())),
-                                    BlocProvider(create: (_) => TrailerBloc(context.read())),
-                                  ],
-                                  child: MovieDetailsScreen(movieId: movie.id),
-                                ),
+                                builder:
+                                    (_) => MultiBlocProvider(
+                                      providers: [
+                                        BlocProvider(
+                                          create:
+                                              (_) => MovieDetailsBloc(
+                                                movieRepository: context.read(),
+                                              ),
+                                        ),
+                                        BlocProvider(
+                                          create:
+                                              (_) => CastBloc(
+                                                movieRepository: context.read(),
+                                              ),
+                                        ),
+                                        BlocProvider(
+                                          create:
+                                              (_) =>
+                                                  TrailerBloc(context.read()),
+                                        ),
+                                      ],
+                                      child: MovieDetailsScreen(
+                                        movieId: movie.id,
+                                      ),
+                                    ),
                               ),
                             );
                           },
@@ -277,7 +361,8 @@ class _MovieDetailsScreenState extends State<MovieDetailsScreen> {
                                 ClipRRect(
                                   borderRadius: BorderRadius.circular(12),
                                   child: NetworkImageWithFallback(
-                                    imageUrl: 'https://image.tmdb.org/t/p/w500${movie.posterPath}',
+                                    imageUrl:
+                                        'https://image.tmdb.org/t/p/w500${movie.posterPath}',
                                     height: 180,
                                     width: 140,
                                   ),
@@ -296,7 +381,7 @@ class _MovieDetailsScreenState extends State<MovieDetailsScreen> {
                       },
                     ),
                   ),
-                ]
+                ],
               ],
             ),
           );
