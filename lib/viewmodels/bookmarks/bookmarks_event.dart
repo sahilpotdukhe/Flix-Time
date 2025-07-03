@@ -1,10 +1,18 @@
 import 'package:tmdb_movies/models/movie_model.dart';
+import 'package:tmdb_movies/models/tv_show_model.dart';
 
 abstract class BookmarksEvent {}
 
-class LoadBookmarks extends BookmarksEvent {}
+class LoadMoviesBookmarks extends BookmarksEvent {}
 
-class ToggleBookmark extends BookmarksEvent {
+class ToggleMoviesBookmark extends BookmarksEvent {
   final MovieModel movie;
-  ToggleBookmark(this.movie);
+  ToggleMoviesBookmark(this.movie);
+}
+
+class LoadTvShowBookmarks extends BookmarksEvent{}
+
+class ToggleTvShowBookmark extends BookmarksEvent{
+  final TvShowModel tvShowModel;
+  ToggleTvShowBookmark(this.tvShowModel);
 }

@@ -6,8 +6,8 @@ import 'package:hive_flutter/adapters.dart';
 import 'package:tmdb_movies/data/api/tmdb_api.dart';
 import 'package:tmdb_movies/data/repositories/movie_repository.dart';
 import 'package:tmdb_movies/data/repositories/movie_repository_impl.dart';
-import 'package:tmdb_movies/data/repositories/tv_repository.dart';
-import 'package:tmdb_movies/data/repositories/tv_repository_impl.dart';
+import 'package:tmdb_movies/data/repositories/tv_show_repository.dart';
+import 'package:tmdb_movies/data/repositories/tv_show_repository_impl.dart';
 import 'package:tmdb_movies/models/movie_model.dart';
 import 'package:tmdb_movies/viewmodels/bookmarks/bookmarks_bloc.dart';
 import 'package:tmdb_movies/viewmodels/bookmarks/bookmarks_event.dart';
@@ -44,19 +44,19 @@ void main() async {
     apiKey: apiKey
   );
 
-  final tvRepository = TvRepositoryImpl(
+  final tvShowRepository = TvShowRepositoryImpl(
     tmdbApi: tmdbApi,
     tvBox: tvBox,
     apiKey: apiKey,
   );
 
-  runApp(MyApp(movieRepository: movieRepository,tvRepository: tvRepository,));
+  runApp(MyApp(movieRepository: movieRepository,tvShowRepository: tvShowRepository,));
 }
 
 class MyApp extends StatelessWidget {
   final MovieRepository movieRepository;
-  final TvRepository tvRepository;
-  const MyApp({super.key, required this.movieRepository,required this.tvRepository});
+  final TvShowRepository tvShowRepository;
+  const MyApp({super.key, required this.movieRepository,required this.tvShowRepository});
 
   @override
   Widget build(BuildContext context) {
@@ -77,11 +77,12 @@ class MyApp extends StatelessWidget {
           BlocProvider(
             create:
                 (_) =>
-                    BookmarksBloc(movieRepository: movieRepository)
-                      ..add(LoadBookmarks()),
+                    BookmarksBloc(movieRepository: movieRepository,tvShowRepository: tvShowRepository)
+                      ..add(LoadMoviesBookmarks())
+                      ..add(LoadTvShowBookmarks()),
           ),
           BlocProvider(
-            create: (_) => TvShowsBloc(tvRepository: tvRepository)
+            create: (_) => TvShowsBloc(tvRepository: tvShowRepository)
               ..add(FetchTrendingTvShows())
               ..add(FetchPopularTvShows())
               ..add(FetchTopRatedTvShows()),

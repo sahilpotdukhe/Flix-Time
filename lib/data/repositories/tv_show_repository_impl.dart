@@ -1,15 +1,17 @@
+import 'dart:developer';
+
 import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:hive/hive.dart';
 import 'package:tmdb_movies/data/api/tmdb_api.dart';
 import 'package:tmdb_movies/models/tv_show_model.dart';
-import 'package:tmdb_movies/data/repositories/tv_repository.dart';
+import 'package:tmdb_movies/data/repositories/tv_show_repository.dart';
 
-class TvRepositoryImpl implements TvRepository {
+class TvShowRepositoryImpl implements TvShowRepository {
   final TMDBApi tmdbApi;
   final Box<TvShowModel> tvBox;
   final String apiKey;
 
-  TvRepositoryImpl({
+  TvShowRepositoryImpl({
     required this.tmdbApi,
     required this.tvBox,
     required this.apiKey,
@@ -108,6 +110,30 @@ class TvRepositoryImpl implements TvRepository {
     } catch (e) {
       throw Exception("Failed to fetch TV show details.");
     }
+  }
+
+  @override
+  Future<void> toggleBookmark(TvShowModel tvShow) async {
+    final key = _createKey('bookmark', tvShow.id);
+
+    if (tvBox.containsKey(key)) {
+      await tvBox.delete(key);
+      log("Removed bookmark: ${tvShow.title}");
+    } else {
+      await tvBox.put(key, tvShow);
+      log("Added bookmark: ${tvShow.title}");
+    }
+  }
+
+  @override
+  List<TvShowModel> getBookMarkedTvShows() {
+    return _getCachedByPrefix('bookmark');
+  }
+
+  @override
+  bool isBookmarked(int tvShowId) {
+    final key = _createKey('bookmark', tvShowId);
+    return tvBox.containsKey(key);
   }
 
 }

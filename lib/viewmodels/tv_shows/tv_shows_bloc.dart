@@ -1,10 +1,10 @@
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:tmdb_movies/data/repositories/tv_repository.dart';
+import 'package:tmdb_movies/data/repositories/tv_show_repository.dart';
 import 'tv_shows_event.dart';
 import 'tv_shows_state.dart';
 
 class TvShowsBloc extends Bloc<TvShowsEvent, TvShowsState> {
-  final TvRepository tvRepository;
+  final TvShowRepository tvRepository;
 
   TvShowsBloc({required this.tvRepository}) : super(TvShowsState()) {
     on<FetchTrendingTvShows>(_onFetchTrending);
