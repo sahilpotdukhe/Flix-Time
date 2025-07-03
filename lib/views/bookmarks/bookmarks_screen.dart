@@ -63,7 +63,7 @@ class BookmarksScreen extends StatelessWidget {
                           providers: [
                             BlocProvider(create: (_) => MovieDetailsBloc(movieRepository: context.read())),
                             BlocProvider(create: (_) => CastBloc(movieRepository: context.read())),
-                            BlocProvider(create: (_) => TrailerBloc(context.read())),
+                            BlocProvider(create: (_) => TrailerBloc(movieRepository: context.read(),tvShowRepository: context.read())),
                           ],
                           child: MovieDetailsScreen(movieId: movie.id),
                         ),

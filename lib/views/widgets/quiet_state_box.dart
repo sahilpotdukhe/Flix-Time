@@ -12,42 +12,47 @@ class QuietStateBox extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ListView(
-      children: [
-        SizedBox(height: 70),
-        Center(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 30),
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: BorderRadius.circular(50),
-                color: Colors.white,
-              ),
-              padding: EdgeInsets.symmetric(vertical: 25, horizontal: 25),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.center,
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Image.asset('assets/noData.png', height: 400),
-                  SizedBox(height: 50),
-                  Text(
-                    title,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 25,color: Colors.black),
+    return SingleChildScrollView( // Prevent overflow and layout issues
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 70),
+        child: Center(
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(50),
+              color: Colors.white,
+            ),
+            padding: const EdgeInsets.symmetric(vertical: 25, horizontal: 25),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Image.asset('assets/noData.png', height: 300),
+                const SizedBox(height: 30),
+                Text(
+                  title,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 25,
+                    color: Colors.black,
                   ),
-                  SizedBox(height: 10),
-                  Text(
-                    subtitle,
-                    textAlign: TextAlign.center,
-                    style: TextStyle(fontSize: 15, letterSpacing: 1.1,color: Colors.black),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  subtitle,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    fontSize: 15,
+                    letterSpacing: 1.1,
+                    color: Colors.black,
                   ),
-                  SizedBox(height: 65),
-                ],
-              ),
+                ),
+                const SizedBox(height: 40),
+              ],
             ),
           ),
         ),
-      ],
+      ),
     );
   }
 }

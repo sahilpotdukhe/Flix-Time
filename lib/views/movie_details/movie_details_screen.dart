@@ -38,7 +38,7 @@ class _MovieDetailsScreenState extends State<MovieDetailsScreen> {
       FetchSimilarMovies(movieId: widget.movieId),
     );
     context.read<CastBloc>().add(FetchCast(widget.movieId));
-    context.read<TrailerBloc>().add(FetchTrailer(widget.movieId));
+    context.read<TrailerBloc>().add(FetchMovieTrailer(widget.movieId));
   }
 
   void _initYoutube(String key) {
@@ -102,7 +102,7 @@ class _MovieDetailsScreenState extends State<MovieDetailsScreen> {
                 FetchSimilarMovies(movieId: widget.movieId),
               );
               context.read<CastBloc>().add(FetchCast(widget.movieId));
-              context.read<TrailerBloc>().add(FetchTrailer(widget.movieId));
+              context.read<TrailerBloc>().add(FetchMovieTrailer(widget.movieId));
             },
             child: ListView(
               padding: const EdgeInsets.all(16),
@@ -279,8 +279,8 @@ class _MovieDetailsScreenState extends State<MovieDetailsScreen> {
                 const SizedBox(height: 24),
                 BlocBuilder<TrailerBloc, TrailerState>(
                   builder: (context, trailerState) {
-                    if (trailerState.key != null) {
-                      _initYoutube(trailerState.key!);
+                    if (trailerState.movieKey != null) {
+                      _initYoutube(trailerState.movieKey!);
                       return Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -343,7 +343,7 @@ class _MovieDetailsScreenState extends State<MovieDetailsScreen> {
                                         BlocProvider(
                                           create:
                                               (_) =>
-                                                  TrailerBloc(context.read()),
+                                                  TrailerBloc(movieRepository: context.read(), tvShowRepository: context.read()),
                                         ),
                                       ],
                                       child: MovieDetailsScreen(

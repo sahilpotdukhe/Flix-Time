@@ -13,6 +13,7 @@ import 'package:tmdb_movies/viewmodels/bookmarks/bookmarks_bloc.dart';
 import 'package:tmdb_movies/viewmodels/bookmarks/bookmarks_event.dart';
 import 'package:tmdb_movies/viewmodels/home/home_bloc.dart';
 import 'package:tmdb_movies/viewmodels/home/home_events.dart';
+import 'package:tmdb_movies/viewmodels/trailer/trailer_bloc.dart';
 import 'package:tmdb_movies/viewmodels/tv_shows/tv_shows_bloc.dart';
 import 'package:tmdb_movies/viewmodels/tv_shows/tv_shows_event.dart';
 import 'package:tmdb_movies/views/splash/splash_screen.dart';
@@ -93,6 +94,12 @@ class MyApp extends StatelessWidget {
               ..add(FetchTrendingTvShows())
               ..add(FetchPopularTvShows())
               ..add(FetchTopRatedTvShows()),
+          ),
+          BlocProvider(
+            create: (_) => TrailerBloc(
+              movieRepository: movieRepository,
+              tvShowRepository: tvShowRepository,
+            ),
           ),
         ],
         child: MaterialApp(
