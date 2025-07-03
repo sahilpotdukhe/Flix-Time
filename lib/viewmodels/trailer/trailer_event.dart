@@ -1,5 +1,10 @@
 abstract class TrailerEvent {}
-class FetchTrailer extends TrailerEvent {
+class FetchMovieTrailer extends TrailerEvent {
   final int movieId;
-  FetchTrailer(this.movieId);
+  FetchMovieTrailer(this.movieId);
+}
+
+class FetchTvShowTrailer extends TrailerEvent {
+  final int tvShowId;
+  FetchTvShowTrailer(this.tvShowId);
 }

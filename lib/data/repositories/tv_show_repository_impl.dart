@@ -148,4 +148,31 @@ class TvShowRepositoryImpl implements TvShowRepository {
     }
   }
 
+  @override
+  Future<String?> getTvShowTrailerKey(int tvShowId) async {
+    try {
+      if (!await _isConnected()) throw Exception("Offline");
+
+      final resp = await tmdbApi.getTvShowVideos(tvShowId, apiKey, 'en-US');
+
+      final trailerList =
+      resp.results
+          .where(
+            (v) =>
+        v.site.toLowerCase() == 'youtube' &&
+            v.type.toLowerCase() == 'trailer',
+      )
+          .toList();
+
+      if (trailerList.isNotEmpty) {
+        return trailerList.first.key;
+      }
+
+      return null;
+    } catch (e) {
+      log('Trailer fetch failed: $e');
+      return null;
+    }
+  }
+
 }

@@ -88,4 +88,11 @@ abstract class TMDBApi {
     @Query("api_key") String apiKey,
     @Query("query") String query,
   );
+
+  @GET('tv/{tvShowId}/videos')
+  Future<MovieVideosResponse> getTvShowVideos(
+    @Path('tvShowId') int tvShowId,
+    @Query('api_key') String apiKey,
+    @Query('language') String lang,
+  );
 }

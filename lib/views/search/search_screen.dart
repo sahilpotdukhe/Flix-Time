@@ -90,7 +90,7 @@ class _SearchView extends StatelessWidget {
                                         ),
                                   ),
                                   BlocProvider(
-                                    create: (_) => TrailerBloc(context.read()),
+                                    create: (_) => TrailerBloc(movieRepository: context.read(), tvShowRepository: context.read()),
                                   ),
                                 ],
                                 child: MovieDetailsScreen(movieId: m.id),

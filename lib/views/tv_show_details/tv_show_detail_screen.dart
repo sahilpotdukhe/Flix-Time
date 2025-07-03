@@ -6,8 +6,12 @@ import 'package:tmdb_movies/viewmodels/bookmarks/bookmarks_state.dart';
 import 'package:tmdb_movies/viewmodels/tv_shows/tv_shows_bloc.dart';
 import 'package:tmdb_movies/viewmodels/tv_shows/tv_shows_event.dart';
 import 'package:tmdb_movies/viewmodels/tv_shows/tv_shows_state.dart';
+import 'package:tmdb_movies/viewmodels/trailer/trailer_bloc.dart';
+import 'package:tmdb_movies/viewmodels/trailer/trailer_event.dart';
+import 'package:tmdb_movies/viewmodels/trailer/trailer_state.dart';
 import 'package:tmdb_movies/views/widgets/network_image_with_fallback.dart';
 import 'package:tmdb_movies/views/widgets/quiet_state_box.dart';
+import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 
 class TvShowDetailsScreen extends StatefulWidget {
   final int tvShowId;
@@ -19,10 +23,27 @@ class TvShowDetailsScreen extends StatefulWidget {
 }
 
 class _TvShowDetailsScreenState extends State<TvShowDetailsScreen> {
+  YoutubePlayerController? _ytController;
+
   @override
   void initState() {
     super.initState();
     context.read<TvShowsBloc>().add(FetchTvShowDetails(tvId: widget.tvShowId));
+    context.read<TrailerBloc>().add(FetchTvShowTrailer(widget.tvShowId));
+  }
+
+  void _initYoutube(String key) {
+    _ytController?.dispose();
+    _ytController = YoutubePlayerController(
+      initialVideoId: key,
+      flags: const YoutubePlayerFlags(autoPlay: false),
+    );
+  }
+
+  @override
+  void dispose() {
+    _ytController?.dispose();
+    super.dispose();
   }
 
   @override
@@ -42,133 +63,140 @@ class _TvShowDetailsScreenState extends State<TvShowDetailsScreen> {
 
           if (state.error != null) {
             return QuietStateBox(
-              title: 'Movie details not fetched',
-              subtitle:
-                  'Please Refresh or revisit to load with movies details.\n ${state.error}',
+              title: 'TV Show details not fetched',
+              subtitle: 'Please refresh or revisit.\n${state.error}',
             );
           }
 
           final tvShow = state.tvShowDetails;
           if (tvShow == null) {
-            return const Center(
-              child: QuietStateBox(
-                title: 'TV Show details not fetched',
-                subtitle:
-                    'Please Refresh or revisit to load with Tv show details',
-              ),
+            return const QuietStateBox(
+              title: 'TV Show details not fetched',
+              subtitle: 'Please refresh or revisit to load the TV show details.',
             );
           }
 
-          return SingleChildScrollView(
+          return ListView(
             padding: const EdgeInsets.all(16),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: NetworkImageWithFallback(
-                      imageUrl:
-                          'https://image.tmdb.org/t/p/w500${tvShow.posterPath}',
-                      height: 300,
-                      width: 200,
-                    ),
+            children: [
+              Center(
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(12),
+                  child: NetworkImageWithFallback(
+                    imageUrl: 'https://image.tmdb.org/t/p/w500${tvShow.posterPath}',
+                    height: 300,
+                    width: 200,
                   ),
                 ),
-                Center(
-                  child: BlocBuilder<BookmarksBloc, BookmarksState>(
-                    builder: (context, state) {
-                      final isBookmarked = state.tvShowBookmarks.any(
-                        (tv) => tv.id == tvShow.id,
-                      );
-
-                      return GestureDetector(
-                        onTap: () {
-                          context.read<BookmarksBloc>().add(
-                            ToggleTvShowBookmark(tvShow),
-                          );
-                        },
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 8,
-                          ),
-                          decoration: BoxDecoration(
-                            color: Colors.black,
-                            borderRadius: BorderRadius.circular(30),
-                            boxShadow: [
-                              BoxShadow(
-                                color: Colors.black.withOpacity(0.3),
-                                blurRadius: 6,
-                                offset: const Offset(0, 3),
-                              ),
-                            ],
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                isBookmarked
-                                    ? Icons.bookmark
-                                    : Icons.bookmark_border,
-                                color: Colors.amber,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                isBookmarked
-                                    ? "Bookmarked"
-                                    : "Add to Bookmarks",
-                                style: const TextStyle(color: Colors.white),
-                              ),
-                            ],
-                          ),
+              ),
+              const SizedBox(height: 12),
+              Center(
+                child: BlocBuilder<BookmarksBloc, BookmarksState>(
+                  builder: (context, state) {
+                    final isBookmarked = state.tvShowBookmarks.any((tv) => tv.id == tvShow.id);
+                    return GestureDetector(
+                      onTap: () {
+                        context.read<BookmarksBloc>().add(ToggleTvShowBookmark(tvShow));
+                      },
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.black,
+                          borderRadius: BorderRadius.circular(30),
+                          boxShadow: [
+                            BoxShadow(
+                              color: Colors.black.withOpacity(0.3),
+                              blurRadius: 6,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
                         ),
-                      );
-                    },
-                  ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(
+                              isBookmarked ? Icons.bookmark : Icons.bookmark_border,
+                              color: Colors.amber,
+                            ),
+                            const SizedBox(width: 8),
+                            Text(
+                              isBookmarked ? "Bookmarked" : "Add to Bookmarks",
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
                 ),
-                const SizedBox(height: 20),
+              ),
+              const SizedBox(height: 20),
+              Text(
+                tvShow.title,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              if (tvShow.firstAirDate != null)
                 Text(
-                  tvShow.title,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontSize: 24,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                if (tvShow.firstAirDate != null)
-                  Text(
-                    "First Air Date: ${tvShow.firstAirDate}",
-                    style: const TextStyle(color: Colors.white70),
-                  ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    const Icon(Icons.star, color: Colors.amberAccent),
-                    const SizedBox(width: 4),
-                    Text(
-                      "${tvShow.voteAverage}",
-                      style: const TextStyle(color: Colors.white),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  "Overview",
-                  style: TextStyle(
-                    color: Colors.amberAccent,
-                    fontSize: 20,
-                    fontWeight: FontWeight.w600,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Text(
-                  tvShow.overview,
+                  "First Air Date: ${tvShow.firstAirDate}",
                   style: const TextStyle(color: Colors.white70),
                 ),
-              ],
-            ),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  const Icon(Icons.star, color: Colors.amberAccent),
+                  const SizedBox(width: 4),
+                  Text(
+                    "${tvShow.voteAverage}",
+                    style: const TextStyle(color: Colors.white),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              const Text(
+                "Overview",
+                style: TextStyle(
+                  color: Colors.amberAccent,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Text(
+                tvShow.overview,
+                style: const TextStyle(color: Colors.white70),
+              ),
+              const SizedBox(height: 24),
+              BlocBuilder<TrailerBloc, TrailerState>(
+                builder: (context, trailerState) {
+                  if (trailerState.tvKey != null) {
+                    _initYoutube(trailerState.tvKey!);
+                    return Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const Text(
+                          "Trailer",
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        YoutubePlayer(controller: _ytController!),
+                      ],
+                    );
+                  } else if (trailerState.error != null) {
+                    return const SizedBox(); // Or show a fallback message
+                  }
+                  return const SizedBox();
+                },
+              ),
+            ],
           );
         },
       ),

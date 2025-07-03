@@ -9,4 +9,5 @@ abstract class TvShowRepository {
   List<TvShowModel> getBookMarkedTvShows();
   bool isBookmarked(int tvShowId);
   Future<List<TvShowModel>> searchTvShows(String query);
+  Future<String?> getTvShowTrailerKey(int tvShowId);
 }
