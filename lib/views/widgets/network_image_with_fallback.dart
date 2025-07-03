@@ -33,7 +33,7 @@ class NetworkImageWithFallback extends StatelessWidget {
           ),
       errorWidget:
           (context, url, error) => Image.asset(
-            'assets/images/placeholder.png',
+            'assets/placeholder.png',
             width: width,
             height: height,
             fit: BoxFit.cover,

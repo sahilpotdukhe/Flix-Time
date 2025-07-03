@@ -12,6 +12,7 @@ import 'package:tmdb_movies/views/movie_details/movie_details_screen.dart';
 import 'package:tmdb_movies/views/search/search_screen.dart';
 import 'package:tmdb_movies/views/widgets/network_image_with_fallback.dart';
 import 'package:tmdb_movies/views/widgets/network_status_banner.dart';
+import 'package:tmdb_movies/views/widgets/quiet_state_box.dart';
 
 class MoviesTab extends StatelessWidget {
   const MoviesTab({super.key});
@@ -76,14 +77,7 @@ class MoviesTab extends StatelessWidget {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(
-                          state.errorMessage ?? "No movies available.",
-                          style: const TextStyle(
-                            color: Colors.white70,
-                            fontSize: 16,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
+                        QuietStateBox(title: 'No movies fetched', subtitle: 'Please Refresh to load with movies'),
                         const SizedBox(height: 12),
                         ElevatedButton.icon(
                           onPressed: () {

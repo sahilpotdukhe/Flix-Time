@@ -9,6 +9,7 @@ import 'package:tmdb_movies/views/tv_show_details/tv_show_detail_screen.dart';
 import 'package:tmdb_movies/views/widgets/network_image_with_fallback.dart';
 import 'package:tmdb_movies/views/widgets/network_status_banner.dart';
 import 'package:tmdb_movies/models/tv_show_model.dart';
+import 'package:tmdb_movies/views/widgets/quiet_state_box.dart';
 
 class TvShowsTab extends StatelessWidget {
   const TvShowsTab({super.key});
@@ -70,14 +71,7 @@ class TvShowsTab extends StatelessWidget {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Text(
-                          state.error ?? "No TV shows available.",
-                          style: const TextStyle(
-                            color: Colors.white70,
-                            fontSize: 16,
-                          ),
-                          textAlign: TextAlign.center,
-                        ),
+                        QuietStateBox(title: 'No TV Shows fetched', subtitle: 'Please Refresh to load with Tv shows'),
                         const SizedBox(height: 12),
                         ElevatedButton.icon(
                           onPressed: () {

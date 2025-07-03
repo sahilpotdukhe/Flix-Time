@@ -9,6 +9,7 @@ import 'package:tmdb_movies/viewmodels/trailer/trailer_bloc.dart';
 import 'package:tmdb_movies/views/movie_details/movie_details_screen.dart';
 import 'package:tmdb_movies/views/tv_show_details/tv_show_detail_screen.dart';
 import 'package:tmdb_movies/views/widgets/network_image_with_fallback.dart';
+import 'package:tmdb_movies/views/widgets/quiet_state_box.dart';
 
 class SearchScreen extends StatelessWidget {
   const SearchScreen({super.key});
@@ -34,18 +35,20 @@ class _SearchView extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFF101010),
       appBar: AppBar(
-        backgroundColor: Colors.black,
+        backgroundColor: Colors.amberAccent,
         title: TextField(
-          style: const TextStyle(color: Colors.white),
+          style: const TextStyle(color: Colors.black),
           decoration: const InputDecoration(
             hintText: 'Search movies or TV shows...',
-            hintStyle: TextStyle(color: Colors.white70),
+            hintStyle: TextStyle(color: Colors.black),
             border: InputBorder.none,
           ),
           onChanged: (query) {
             context.read<SearchBloc>().add(SearchQueryChanged(query: query));
           },
         ),
+        iconTheme: const IconThemeData(color: Colors.black),
+
       ),
       body: BlocBuilder<SearchBloc, SearchState>(
         builder: (context, state) {
@@ -55,12 +58,7 @@ class _SearchView extends StatelessWidget {
 
           if (state.searchMoviesResult.isEmpty &&
               state.searchTvShowsResult.isEmpty) {
-            return const Center(
-              child: Text(
-                'No results found',
-                style: TextStyle(color: Colors.white70),
-              ),
-            );
+            return QuietStateBox(title: 'No Movies or Tv Shows found!', subtitle: 'Please enter relevant input to see results.');
           }
 
           return ListView(

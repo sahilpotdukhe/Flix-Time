@@ -8,6 +8,7 @@ import 'package:tmdb_movies/viewmodels/trailer/trailer_bloc.dart';
 import 'package:tmdb_movies/views/movie_details/movie_details_screen.dart';
 import 'package:tmdb_movies/views/tv_show_details/tv_show_detail_screen.dart';
 import 'package:tmdb_movies/views/widgets/network_image_with_fallback.dart';
+import 'package:tmdb_movies/views/widgets/quiet_state_box.dart';
 
 class BookmarksScreen extends StatelessWidget {
   const BookmarksScreen({super.key});
@@ -37,10 +38,7 @@ class BookmarksScreen extends StatelessWidget {
 
           if (movies.isEmpty && tvShows.isEmpty) {
             return const Center(
-              child: Text(
-                'No bookmarks found',
-                style: TextStyle(color: Colors.white70, fontSize: 16),
-              ),
+              child: QuietStateBox(title: 'No bookmarks found', subtitle: 'You haven\'t bookmarked any movies or tv shows')
             );
           }
 
