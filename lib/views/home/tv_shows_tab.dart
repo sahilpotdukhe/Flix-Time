@@ -55,7 +55,6 @@ class TvShowsTab extends StatelessWidget {
           Expanded(
             child: BlocBuilder<TvShowsBloc, TvShowsState>(
               builder: (context, state) {
-                print('TV state: loading=${state.isLoading}, trending=${state.trendingTvShows.length}');
                 final hasData = state.trendingTvShows.isNotEmpty ||
                     state.popularTvShows.isNotEmpty ||
                     state.topRatedTvShows.isNotEmpty;

@@ -1,24 +1,29 @@
 import 'package:tmdb_movies/models/movie_model.dart';
+import 'package:tmdb_movies/models/tv_show_model.dart';
 
 class SearchState {
-  final List<MovieModel> searchResult;
+  final List<MovieModel> searchMoviesResult;
+  final List<TvShowModel> searchTvShowsResult;
   final bool isLoading;
   final String? error;
 
   SearchState({
     this.isLoading = false,
-    this.searchResult = const [],
+    this.searchMoviesResult = const [],
+    this.searchTvShowsResult = const [],
     this.error,
   });
 
   SearchState copyWith({
     bool? isLoading,
-    List<MovieModel>? searchResult,
+    List<MovieModel>? searchMoviesResult,
+    List<TvShowModel>? searchTvShowsResult,
     String? error,
   }) {
     return SearchState(
       isLoading: isLoading ?? this.isLoading,
-      searchResult: searchResult ?? this.searchResult,
+      searchMoviesResult: searchMoviesResult ?? this.searchMoviesResult,
+      searchTvShowsResult: searchTvShowsResult ?? this.searchTvShowsResult,
       error: error,
     );
   }

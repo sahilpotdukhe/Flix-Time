@@ -141,17 +141,16 @@ class _TvShowDetailsScreenState extends State<TvShowDetailsScreen> {
                     style: const TextStyle(color: Colors.white70),
                   ),
                 const SizedBox(height: 8),
-                if (tvShow.voteAverage != null)
-                  Row(
-                    children: [
-                      const Icon(Icons.star, color: Colors.amberAccent),
-                      const SizedBox(width: 4),
-                      Text(
-                        "${tvShow.voteAverage}",
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                    ],
-                  ),
+                Row(
+                  children: [
+                    const Icon(Icons.star, color: Colors.amberAccent),
+                    const SizedBox(width: 4),
+                    Text(
+                      "${tvShow.voteAverage}",
+                      style: const TextStyle(color: Colors.white),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 16),
                 const Text(
                   "Overview",
@@ -163,7 +162,7 @@ class _TvShowDetailsScreenState extends State<TvShowDetailsScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  tvShow.overview ?? "No description available.",
+                  tvShow.overview,
                   style: const TextStyle(color: Colors.white70),
                 ),
               ],
