@@ -20,17 +20,17 @@ class TvShowsState extends Equatable {
 
   TvShowsState copyWith({
     bool? isLoading,
-    List<TvShowModel>? trending,
-    List<TvShowModel>? popular,
-    List<TvShowModel>? topRated,
+    List<TvShowModel>? trendingTvShows,
+    List<TvShowModel>? popularTvShows,
+    List<TvShowModel>? topRatedTvShows,
     TvShowModel? tvShowDetails,
     String? error,
   }) {
     return TvShowsState(
       isLoading: isLoading ?? this.isLoading,
-      trendingTvShows: trending ?? this.trendingTvShows,
-      popularTvShows: popular ?? this.popularTvShows,
-      topRatedTvShows: topRated ?? this.topRatedTvShows,
+      trendingTvShows: trendingTvShows ?? this.trendingTvShows,
+      popularTvShows: popularTvShows ?? this.popularTvShows,
+      topRatedTvShows: topRatedTvShows ?? this.topRatedTvShows,
       tvShowDetails: tvShowDetails ?? this.tvShowDetails,
       error: error,
     );

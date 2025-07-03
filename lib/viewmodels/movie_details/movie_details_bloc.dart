@@ -31,7 +31,6 @@ class MovieDetailsBloc extends Bloc<MovieDetailsEvent, MovieDetailsState> {
     emit(state.copyWith(isLoading: true,error: null));
     try{
       final similarMovies = await movieRepository.getSimilarMovies(event.movieId);
-      print("error: $similarMovies");
       emit(state.copyWith(isLoading: false,similarMovies: similarMovies));
     }catch(e){
       emit(state.copyWith(isLoading: false,error: e.toString()));

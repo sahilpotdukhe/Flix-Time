@@ -18,7 +18,7 @@ class TvShowsBloc extends Bloc<TvShowsEvent, TvShowsState> {
     emit(state.copyWith(isLoading: true));
     try {
       final shows = await tvRepository.getTrendingTvShows();
-      emit(state.copyWith(isLoading: false, trending: shows));
+      emit(state.copyWith(isLoading: false, trendingTvShows: shows));
     } catch (e) {
       emit(state.copyWith(isLoading: false, error: e.toString()));
     }
@@ -29,7 +29,7 @@ class TvShowsBloc extends Bloc<TvShowsEvent, TvShowsState> {
     emit(state.copyWith(isLoading: true));
     try {
       final shows = await tvRepository.getPopularTvShows();
-      emit(state.copyWith(isLoading: false, popular: shows));
+      emit(state.copyWith(isLoading: false, popularTvShows: shows));
     } catch (e) {
       emit(state.copyWith(isLoading: false, error: e.toString()));
     }
@@ -40,7 +40,7 @@ class TvShowsBloc extends Bloc<TvShowsEvent, TvShowsState> {
     emit(state.copyWith(isLoading: true));
     try {
       final shows = await tvRepository.getTopRatedTvShows();
-      emit(state.copyWith(isLoading: false, topRated: shows));
+      emit(state.copyWith(isLoading: false, topRatedTvShows: shows));
     } catch (e) {
       emit(state.copyWith(isLoading: false, error: e.toString()));
     }

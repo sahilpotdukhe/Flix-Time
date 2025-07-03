@@ -56,30 +56,37 @@ void main() async {
 class MyApp extends StatelessWidget {
   final MovieRepository movieRepository;
   final TvShowRepository tvShowRepository;
-  const MyApp({super.key, required this.movieRepository,required this.tvShowRepository});
+
+  const MyApp({
+    super.key,
+    required this.movieRepository,
+    required this.tvShowRepository,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return RepositoryProvider<MovieRepository>.value(
-      value: movieRepository,
+    return MultiRepositoryProvider(
+      providers: [
+        RepositoryProvider<MovieRepository>.value(value: movieRepository),
+        RepositoryProvider<TvShowRepository>.value(value: tvShowRepository),
+      ],
       child: MultiBlocProvider(
         providers: [
           BlocProvider(
-            create:
-                (_) =>
-                    HomeBloc(movieRepository: movieRepository)
-                      ..add(FetchTrendingMovies())
-                      ..add(FetchNowPlayingMovies())
-                      ..add(FetchPopularMovies())
-                      ..add(FetchTopRatedMovies())
-                      ..add(FetchUpcomingMovies())
+            create: (_) => HomeBloc(movieRepository: movieRepository)
+              ..add(FetchTrendingMovies())
+              ..add(FetchNowPlayingMovies())
+              ..add(FetchPopularMovies())
+              ..add(FetchTopRatedMovies())
+              ..add(FetchUpcomingMovies()),
           ),
           BlocProvider(
-            create:
-                (_) =>
-                    BookmarksBloc(movieRepository: movieRepository,tvShowRepository: tvShowRepository)
-                      ..add(LoadMoviesBookmarks())
-                      ..add(LoadTvShowBookmarks()),
+            create: (_) => BookmarksBloc(
+              movieRepository: movieRepository,
+              tvShowRepository: tvShowRepository,
+            )
+              ..add(LoadMoviesBookmarks())
+              ..add(LoadTvShowBookmarks()),
           ),
           BlocProvider(
             create: (_) => TvShowsBloc(tvRepository: tvShowRepository)

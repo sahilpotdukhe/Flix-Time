@@ -136,4 +136,16 @@ class TvShowRepositoryImpl implements TvShowRepository {
     return tvBox.containsKey(key);
   }
 
+  @override
+  Future<List<TvShowModel>> searchTvShows(String query) async {
+    try {
+      if (!await _isConnected()) throw Exception("Offline");
+      final response = await tmdbApi.searchTvShows(apiKey, query);
+      return response.results;
+    } catch (e) {
+      log("Search error: $e");
+      return [];
+    }
+  }
+
 }

@@ -82,4 +82,10 @@ abstract class TMDBApi {
     @Path("tv_id") int tvId,
     @Query("api_key") String apiKey,
   );
+
+  @GET("search/tv")
+  Future<TvShowListResponse> searchTvShows(
+    @Query("api_key") String apiKey,
+    @Query("query") String query,
+  );
 }

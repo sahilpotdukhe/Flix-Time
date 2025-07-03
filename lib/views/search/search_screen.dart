@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:tmdb_movies/models/movie_model.dart';
 import 'package:tmdb_movies/viewmodels/casts/cast_bloc.dart';
 import 'package:tmdb_movies/viewmodels/movie_details/movie_details_bloc.dart';
 import 'package:tmdb_movies/viewmodels/search/search_bloc.dart';
 import 'package:tmdb_movies/viewmodels/search/search_event.dart';
 import 'package:tmdb_movies/viewmodels/search/search_state.dart';
-import 'package:tmdb_movies/viewmodels/trailer/trailer_bloc.dart' show TrailerBloc;
+import 'package:tmdb_movies/viewmodels/trailer/trailer_bloc.dart';
 import 'package:tmdb_movies/views/movie_details/movie_details_screen.dart';
+import 'package:tmdb_movies/views/tv_show_details/tv_show_detail_screen.dart';
 import 'package:tmdb_movies/views/widgets/network_image_with_fallback.dart';
 
 class SearchScreen extends StatelessWidget {
@@ -16,7 +16,11 @@ class SearchScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => SearchBloc(movieRepository: context.read()),
+      create:
+          (context) => SearchBloc(
+            movieRepository: context.read(),
+            tvShowRepository: context.read(),
+          ),
       child: const _SearchView(),
     );
   }
@@ -28,164 +32,130 @@ class _SearchView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF0E0E0E),
+      backgroundColor: const Color(0xFF101010),
       appBar: AppBar(
-        backgroundColor: Colors.black87,
-        elevation: 0,
-        centerTitle: true,
-        title: const Text(
-          "Search Movies",
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.w600,
-            fontSize: 20,
+        backgroundColor: Colors.black,
+        title: TextField(
+          style: const TextStyle(color: Colors.white),
+          decoration: const InputDecoration(
+            hintText: 'Search movies or TV shows...',
+            hintStyle: TextStyle(color: Colors.white70),
+            border: InputBorder.none,
           ),
+          onChanged: (query) {
+            context.read<SearchBloc>().add(SearchQueryChanged(query: query));
+          },
         ),
-        iconTheme: const IconThemeData(color: Colors.white),
       ),
-      body: Column(
-        children: [
-          Padding(
-            padding: const EdgeInsets.all(12),
-            child: TextField(
-              style: const TextStyle(color: Colors.white),
-              cursorColor: Colors.amber,
-              decoration: InputDecoration(
-                filled: true,
-                fillColor: Colors.grey[850],
-                hintText: "Search for a movie...",
-                hintStyle: const TextStyle(color: Colors.white54),
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: BorderSide.none,
-                ),
-                prefixIcon: const Icon(Icons.search, color: Colors.white54),
+      body: BlocBuilder<SearchBloc, SearchState>(
+        builder: (context, state) {
+          if (state.isLoading) {
+            return const Center(child: CircularProgressIndicator());
+          }
+
+          if (state.searchMoviesResult.isEmpty &&
+              state.searchTvShowsResult.isEmpty) {
+            return const Center(
+              child: Text(
+                'No results found',
+                style: TextStyle(color: Colors.white70),
               ),
-              onChanged: (query) {
-                context.read<SearchBloc>().add(
-                  SearchQueryChanged(query: query),
-                );
-              },
-            ),
-          ),
-          Expanded(
-            child: BlocBuilder<SearchBloc, SearchState>(
-              builder: (context, state) {
-                if (state.isLoading) {
-                  return const Center(
-                    child: CircularProgressIndicator(color: Colors.amber),
-                  );
-                }
+            );
+          }
 
-                if (state.error != null) {
-                  return Center(
-                    child: Text(
-                      "Error: ${state.error!}",
-                      style: const TextStyle(color: Colors.white),
-                    ),
-                  );
-                }
-
-                if (state.searchResult.isEmpty) {
-                  return const Center(
-                    child: Text(
-                      "No results found",
-                      style: TextStyle(color: Colors.white70),
-                    ),
-                  );
-                }
-
-                return ListView.separated(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 12,
-                    vertical: 6,
-                  ),
-                  itemCount: state.searchResult.length,
-                  separatorBuilder: (_, __) => const SizedBox(height: 10),
-                  itemBuilder: (context, index) {
-                    final MovieModel movie = state.searchResult[index];
-                    final posterUrl =
-                        'https://image.tmdb.org/t/p/w500${movie.posterPath}';
-
-                    return GestureDetector(
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (_) => MultiBlocProvider(
-                              providers: [
-                                BlocProvider(create: (_) => MovieDetailsBloc(movieRepository: context.read())),
-                                BlocProvider(create: (_) => CastBloc(movieRepository: context.read())),
-                                BlocProvider(create: (_) => TrailerBloc(context.read())),
-                              ],
-                              child: MovieDetailsScreen(movieId: movie.id),
-                            ),
-                          ),
-                        );
-                      },
-                      child: Container(
-                        decoration: BoxDecoration(
-                          color: Colors.grey[900],
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        padding: const EdgeInsets.all(10),
-                        child: Row(
-                          children: [
-                            ClipRRect(
-                              borderRadius: BorderRadius.circular(8),
-                              child: NetworkImageWithFallback(
-                                imageUrl: posterUrl,
-                                height: 80,
-                                width: 55,
-                              ),
-                            ),
-                            const SizedBox(width: 12),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    movie.title,
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 16,
-                                    ),
+          return ListView(
+            children: [
+              if (state.searchMoviesResult.isNotEmpty) ...[
+                _sectionTitle("Movies"),
+                ...state.searchMoviesResult.map(
+                  (m) => _resultTile(
+                    title: m.title,
+                    subtitle: "⭐ ${m.voteAverage} | 📅 ${m.releaseDate}",
+                    imagePath: m.posterPath,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder:
+                              (_) => MultiBlocProvider(
+                                providers: [
+                                  BlocProvider(
+                                    create:
+                                        (_) => MovieDetailsBloc(
+                                          movieRepository: context.read(),
+                                        ),
                                   ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    "📅 ${movie.releaseDate}   ⭐ ${movie.voteAverage}",
-                                    style: const TextStyle(
-                                      color: Colors.amberAccent,
-                                      fontSize: 13,
-                                    ),
+                                  BlocProvider(
+                                    create:
+                                        (_) => CastBloc(
+                                          movieRepository: context.read(),
+                                        ),
                                   ),
-                                  const SizedBox(height: 4),
-                                  Text(
-                                    movie.overview.isNotEmpty
-                                        ? (movie.overview.length > 80
-                                            ? "${movie.overview.substring(0, 80)}..."
-                                            : movie.overview)
-                                        : "No description available.",
-                                    style: const TextStyle(
-                                      color: Colors.white70,
-                                      fontSize: 13,
-                                    ),
+                                  BlocProvider(
+                                    create: (_) => TrailerBloc(context.read()),
                                   ),
                                 ],
+                                child: MovieDetailsScreen(movieId: m.id),
                               ),
-                            ),
-                          ],
                         ),
-                      ),
-                    );
-                  },
-                );
-              },
-            ),
-          ),
-        ],
+                      );
+                    },
+                  ),
+                ),
+              ],
+              if (state.searchTvShowsResult.isNotEmpty) ...[
+                _sectionTitle("TV Shows"),
+                ...state.searchTvShowsResult.map(
+                  (tv) => _resultTile(
+                    title: tv.title,
+                    subtitle: "⭐ ${tv.voteAverage} | 📅 ${tv.firstAirDate}",
+                    imagePath: tv.posterPath,
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => TvShowDetailsScreen(tvShowId: tv.id),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+              ],
+            ],
+          );
+        },
       ),
+    );
+  }
+
+  Widget _sectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+      child: Text(
+        title,
+        style: const TextStyle(fontSize: 18, color: Colors.white),
+      ),
+    );
+  }
+
+  Widget _resultTile({
+    required String title,
+    required String subtitle,
+    required String? imagePath,
+    required VoidCallback onTap,
+  }) {
+    return ListTile(
+      onTap: onTap,
+      leading: ClipRRect(
+        borderRadius: BorderRadius.circular(6),
+        child: NetworkImageWithFallback(
+          imageUrl: 'https://image.tmdb.org/t/p/w200$imagePath',
+          width: 50,
+          height: 75,
+        ),
+      ),
+      title: Text(title, style: const TextStyle(color: Colors.white)),
+      subtitle: Text(subtitle, style: const TextStyle(color: Colors.white70)),
     );
   }
 }

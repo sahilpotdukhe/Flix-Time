@@ -8,4 +8,5 @@ abstract class TvShowRepository {
   Future<void> toggleBookmark(TvShowModel tvShow);
   List<TvShowModel> getBookMarkedTvShows();
   bool isBookmarked(int tvShowId);
+  Future<List<TvShowModel>> searchTvShows(String query);
 }
