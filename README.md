@@ -1,153 +1,128 @@
-# 🎬 TMDB Movies App
+# TMDB Movies & TV Shows Flutter App 🎬📺
 
-A Flutter application that fetches and displays movies using **The Movie Database (TMDB) API**, featuring:
-- Trending & Now Playing movies
-- Offline caching using **Hive**
-- Bookmark favorite movies
-- View detailed movie info
-- Search movies
-- MVVM + BLoC architecture
-
----
-
-## 🧱 Architecture
-
-The app follows **MVVM** and uses **BLoC** for state management.
-
-```
-lib/
-├── data/
-│   ├── api/             // API service classes
-│   └── repositories/    // Repository implementations
-├── models/              // Hive + JSON serializable models
-├── viewmodels/          // BLoC files: state, events, bloc
-├── views/
-│   ├── home/            // Home screen UI
-│   ├── search/          // Search screen UI
-│   ├── movie_details/   // Movie details UI
-│   └── widgets/         // Reusable UI widgets
-```
-
----
-## 📸 Screenshots
-
-<div align="left">
-
-<table>
-  <tr>
-    <td><img src="screenshots/home_screen.jpg" width="200"/></td>
-    <td><img src="screenshots/movie_details_screen.jpg" width="200"/></td>
-  </tr>
-  <tr>
-    <td><b>🏠 Home</b></td>
-    <td><b>🎬 Movie Details</b></td>
-  </tr>
-  <tr>
-    <td><img src="screenshots/bookmark_screen.jpg" width="200"/></td>
-    <td><img src="screenshots/search_screen.jpg" width="200"/></td>
-  </tr>
-  <tr>
-    <td><b>🔖 Bookmarks</b></td>
-    <td><b>🔍 Search</b></td>
-  </tr>
-</table>
-
-</div>
-
+A beautiful Flutter app showcasing trending, popular, top-rated movies and TV shows using the TMDB API. Built with **Bloc**, **Hive**, **Retrofit (Dio)**, and a **clean MVVM architecture**.
 
 ---
 
 ## 📦 Features
 
-✅ Trending Movies  
-✅ Now Playing Movies  
-✅ Movie Details Page  
-✅ Offline Caching (Hive)  
-✅ Bookmarking Movies  
-✅ Bookmark Screen  
-✅ Search Movies  
-✅ Network Aware UI Banner  
-✅ Error Handling + Fallback UI  
-✅ Shimmer Effect on Loading
+### 🏠 Home Tab
+- Trending Movies (Carousel)
+- Now Playing, Popular, Top Rated, Upcoming Movies
+
+### 📺 TV Shows Tab
+- Trending TV Shows (Carousel)
+- Popular & Top Rated TV Shows
+
+### 🔍 Search
+- Search for Movies
+
+### 📄 Details Screen (Movie & TV Show)
+- Poster, Title, Rating, Release Date, Overview
+- Trailer (YouTube player)
+- Casts (with images)
+- Similar Movies/TV Shows
+- Bookmark toggle
+
+### 🔖 Bookmarks
+- Add/remove movies and TV shows to bookmarks
+- Offline persistence using Hive
+
+### 🛰 Offline Support
+- Movie & TV data cached locally via Hive
+- Works offline once data is cached
+
+### 🧭 Deep Linking (for test/dev)
+- Navigate to specific movie using custom scheme: `tmdbmovies://movie?id=123`
+
+---
+
+## 🗂 Architecture
+
+```
+lib/
+├── data/
+│   ├── api/                 # TMDB API (Retrofit/Dio)
+│   ├── repositories/        # MovieRepository & TvShowRepository
+│
+├── models/                  # MovieModel, TvShowModel, CastModel etc.
+│
+├── viewmodels/              # Bloc, Events, States
+│   ├── home/
+│   ├── bookmarks/
+│   ├── movie_details/
+│   ├── tv_shows/
+│   ├── trailer/
+│   └── casts/
+│
+├── views/
+│   ├── home/
+│   ├── movies/
+│   ├── tv/
+│   ├── search/
+│   ├── widgets/             # Shared widgets (QuietBox, Carousel, etc.)
+│   └── splash/
+│
+├── main.dart
+└── ...
+```
+
+---
+
+## 🔑 Requirements
+
+- Flutter SDK (3.13+)
+- Dart SDK
+- Android/iOS Emulator or Device
+- `.env` file with TMDB API key
+
+```
+TMDB_API_KEY=your_tmdb_api_key_here
+```
 
 ---
 
 ## 🚀 Getting Started
 
-### ✅ Prerequisites
-
-- Flutter 3.x
-- TMDB API key (https://www.themoviedb.org/documentation/api)
-- Android/iOS emulator or real device
-
----
-
-### 🛠️ Setup Instructions
-
-1. **Clone the repository**
-   ```bash
-   git clone https://github.com/sahilpotdukhe/Flix-Time.git
-   cd tmdb_movies
-   ```
-
-2. **Create `.env` file**
-   ```env
-   TMDB_API_KEY=your_tmdb_api_key_here
-   ```
-
-3. **Install packages**
-   ```bash
-   flutter pub get
-   ```
-
-4. **Generate Hive adapters (if not already)**
-   ```bash
-   flutter packages pub run build_runner build
-   ```
-
-5. **Run the app**
-   ```bash
-   flutter run
-   ```
+```bash
+flutter pub get
+flutter pub run build_runner build --delete-conflicting-outputs
+flutter run
+```
 
 ---
 
-## 📂 Local Database (Hive)
+## 🔐 Build Release APK
 
-Boxes used:
+1. Set your keystore in `key.properties` & `build.gradle`
+2. Run:
 
-| Box Name         | Description                      |
-|------------------|----------------------------------|
-| `trendingBox`    | Caches trending movies           |
-| `nowPlayingBox`  | Caches now playing movies        |
-| `movieDetailsBox`| Caches fetched movie details     |
-| `bookmarksBox`   | Stores bookmarked movies         |
+```bash
+flutter build apk --release
+```
 
 ---
 
-## 🧠 State Management
+## 📚 Packages Used
 
-Using [flutter_bloc](https://pub.dev/packages/flutter_bloc):
-
-- `HomeBloc`: Fetches trending & now playing
-- `MovieDetailsBloc`: Fetches full movie info
-- `BookmarksBloc`: Toggle & load bookmarks
-- `SearchBloc`: Handles live search queries
-
----
-
-## 🧪 Offline Support
-
-- If API fails (no network), fallback to Hive cache
-- `NetworkStatusBanner` shown at top when offline
-- Bookmark data fully accessible offline
+- `flutter_bloc`
+- `hive`, `hive_flutter`
+- `retrofit`, `dio`
+- `json_serializable`
+- `flutter_dotenv`
+- `youtube_player_flutter`
+- `equatable`
 
 ---
 
-## 🔎 Search Functionality
+## ❤️ Contributions
 
-- Type in the search bar
-- Live TMDB API call for matching movies
-- Click on result to go to Movie Details screen
+Pull Requests are welcome! Let's make this app even better.
+
+---
+
+## 📸 Screenshots
+
+_(Add your own screenshots here)_
 
 ---
