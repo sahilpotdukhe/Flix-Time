@@ -97,6 +97,60 @@ class _MovieDetailsScreenState extends State<MovieDetailsScreen> {
                     ),
                   ),
                 ),
+
+                Center(
+                  child: BlocBuilder<BookmarksBloc, BookmarksState>(
+                    builder: (context, state) {
+                      final isBookmarked = state.movieBookmarks.any(
+                            (m) => m.id == movie.id,
+                      );
+
+                      return GestureDetector(
+                        onTap: () {
+                          context.read<BookmarksBloc>().add(
+                            ToggleMoviesBookmark(movie),
+                          );
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.black,
+                            borderRadius: BorderRadius.circular(30),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.3),
+                                blurRadius: 6,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                isBookmarked
+                                    ? Icons.bookmark
+                                    : Icons.bookmark_border,
+                                color: Colors.amber,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                isBookmarked
+                                    ? "Bookmarked"
+                                    : "Add to Bookmarks",
+                                style: const TextStyle(color: Colors.white),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
+
                 const SizedBox(height: 16),
                 Text(
                   movie.title,
@@ -201,9 +255,18 @@ class _MovieDetailsScreenState extends State<MovieDetailsScreen> {
                         final movie = similarMovies[index];
                         return GestureDetector(
                           onTap: () {
-                            Navigator.pushReplacement(
+                            Navigator.push(
                               context,
-                              MaterialPageRoute(builder: (_) => MovieDetailsScreen(movieId: movie.id)),
+                              MaterialPageRoute(
+                                builder: (_) => MultiBlocProvider(
+                                  providers: [
+                                    BlocProvider(create: (_) => MovieDetailsBloc(movieRepository: context.read())),
+                                    BlocProvider(create: (_) => CastBloc(movieRepository: context.read())),
+                                    BlocProvider(create: (_) => TrailerBloc(context.read())),
+                                  ],
+                                  child: MovieDetailsScreen(movieId: movie.id),
+                                ),
+                              ),
                             );
                           },
                           child: Container(

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:tmdb_movies/models/tv_show_model.dart';
+import 'package:tmdb_movies/viewmodels/bookmarks/bookmarks_bloc.dart';
+import 'package:tmdb_movies/viewmodels/bookmarks/bookmarks_event.dart';
+import 'package:tmdb_movies/viewmodels/bookmarks/bookmarks_state.dart';
 import 'package:tmdb_movies/viewmodels/tv_shows/tv_shows_bloc.dart';
 import 'package:tmdb_movies/viewmodels/tv_shows/tv_shows_event.dart';
 import 'package:tmdb_movies/viewmodels/tv_shows/tv_shows_state.dart';
@@ -46,8 +48,8 @@ class _TvShowDetailsScreenState extends State<TvShowDetailsScreen> {
             );
           }
 
-          final tv = state.tvShowDetails;
-          if (tv == null) {
+          final tvShow = state.tvShowDetails;
+          if (tvShow == null) {
             return const Center(
               child: Text(
                 "No details available",
@@ -65,15 +67,67 @@ class _TvShowDetailsScreenState extends State<TvShowDetailsScreen> {
                   child: ClipRRect(
                     borderRadius: BorderRadius.circular(12),
                     child: NetworkImageWithFallback(
-                      imageUrl: 'https://image.tmdb.org/t/p/w500${tv.posterPath}',
+                      imageUrl: 'https://image.tmdb.org/t/p/w500${tvShow.posterPath}',
                       height: 300,
                       width: 200,
                     ),
                   ),
                 ),
+                Center(
+                  child: BlocBuilder<BookmarksBloc, BookmarksState>(
+                    builder: (context, state) {
+                      final isBookmarked = state.tvShowBookmarks.any(
+                            (tv) => tv.id == tvShow.id,
+                      );
+
+                      return GestureDetector(
+                        onTap: () {
+                          context.read<BookmarksBloc>().add(
+                            ToggleTvShowBookmark(tvShow),
+                          );
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.black,
+                            borderRadius: BorderRadius.circular(30),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.3),
+                                blurRadius: 6,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(
+                                isBookmarked
+                                    ? Icons.bookmark
+                                    : Icons.bookmark_border,
+                                color: Colors.amber,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                isBookmarked
+                                    ? "Bookmarked"
+                                    : "Add to Bookmarks",
+                                style: const TextStyle(color: Colors.white),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ),
                 const SizedBox(height: 20),
                 Text(
-                  tv.title,
+                  tvShow.title,
                   style: const TextStyle(
                     color: Colors.white,
                     fontSize: 24,
@@ -81,19 +135,19 @@ class _TvShowDetailsScreenState extends State<TvShowDetailsScreen> {
                   ),
                 ),
                 const SizedBox(height: 8),
-                if (tv.firstAirDate != null)
+                if (tvShow.firstAirDate != null)
                   Text(
-                    "First Air Date: ${tv.firstAirDate}",
+                    "First Air Date: ${tvShow.firstAirDate}",
                     style: const TextStyle(color: Colors.white70),
                   ),
                 const SizedBox(height: 8),
-                if (tv.voteAverage != null)
+                if (tvShow.voteAverage != null)
                   Row(
                     children: [
                       const Icon(Icons.star, color: Colors.amberAccent),
                       const SizedBox(width: 4),
                       Text(
-                        "${tv.voteAverage}",
+                        "${tvShow.voteAverage}",
                         style: const TextStyle(color: Colors.white),
                       ),
                     ],
@@ -109,7 +163,7 @@ class _TvShowDetailsScreenState extends State<TvShowDetailsScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  tv.overview ?? "No description available.",
+                  tvShow.overview ?? "No description available.",
                   style: const TextStyle(color: Colors.white70),
                 ),
               ],
